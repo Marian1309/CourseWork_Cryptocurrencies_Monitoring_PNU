@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import '../styles/shadcn-ui';
+@import '../styles/reset';
+
+@layer base {
+  body {
+    @apply font-primary;
+  }
+}
