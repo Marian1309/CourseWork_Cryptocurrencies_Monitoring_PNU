@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 
 import coinMarketCapApi from '@/lib/api';
 
+export const runtime = 'experimental-edge';
+
 export const GET = async (request: NextRequest) => {
   const searchParameters = request.nextUrl.searchParams;
 
