@@ -55,6 +55,7 @@ const RootLayout: FC<Properties> = ({ children }) => {
       <body className={inter.variable}>
         <div className="flex min-h-screen flex-col">
           <Navbar />
+
           <Providers className="flex-1 overflow-y-auto bg-gray-100 pt-12">
             <div className="mx-auto max-w-7xl">{children}</div>
           </Providers>
