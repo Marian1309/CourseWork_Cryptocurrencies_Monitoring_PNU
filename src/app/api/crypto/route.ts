@@ -3,8 +3,6 @@ import { NextResponse } from 'next/server';
 
 import coinMarketCapApi from '@/lib/api';
 
-const CMC_API_KEY = process.env['X_CMC_PRO_API_KEY'];
-
 export const GET = async (request: NextRequest) => {
   const searchParameters = request.nextUrl.searchParams;
 
@@ -15,12 +13,7 @@ export const GET = async (request: NextRequest) => {
 
   try {
     const response = await coinMarketCapApi.get(
-      `/listings/latest?start=${start}&limit=${limit}&sort=${sort}&sort_dir=${sortDirection}`,
-      {
-        headers: {
-          'X-CMC_PRO_API_KEY': CMC_API_KEY || ''
-        }
-      }
+      `/v1/cryptocurrency/listings/latest?start=${start}&limit=${limit}&sort=${sort}&sort_dir=${sortDirection}`
     );
 
     if (response.status !== 200) {

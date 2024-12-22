@@ -3,6 +3,8 @@
 import type { FC } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 
+import Image from 'next/image';
+
 import type { CryptoData, SortConfig } from '@/types/globals';
 
 import { cn } from '@/lib/utils';
@@ -14,9 +16,14 @@ import Loader from '@/components/ui/loader';
 import { TABLE_HEADERS } from '@/constants';
 
 import CryptoDetails from './crypto-details';
+import TablePagination from './table-pagination';
 import TableSearchInput from './table-search-input';
 
-const CryptoTable: FC = () => {
+type Properties = {
+  searchPage: number;
+};
+
+const CryptoTable: FC<Properties> = ({ searchPage }) => {
   const [selectedCrypto, setSelectedCrypto] = useState<CryptoData | undefined>();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState<SortConfig>({
@@ -24,7 +31,7 @@ const CryptoTable: FC = () => {
     direction: 'desc'
   });
 
-  const { data, isLoading, error } = useCrypto(sortConfig);
+  const { data, isLoading, error } = useCrypto(searchPage, sortConfig);
 
   const handleSort = useCallback((key: string) => {
     setSortConfig((previous) => ({
@@ -113,7 +120,8 @@ const CryptoTable: FC = () => {
               const {
                 name,
                 symbol,
-                quote: { USD }
+                quote: { USD },
+                cmc_rank
               } = crypto;
 
               return (
@@ -122,7 +130,16 @@ const CryptoTable: FC = () => {
                   key={crypto.id}
                   onClick={() => handleCryptoClick(crypto)}
                 >
-                  <td className="whitespace-nowrap px-6 py-4">{name}</td>
+                  <td className="whitespace-nowrap px-6 py-4">{cmc_rank}</td>
+                  <td className="flex items-center whitespace-nowrap px-6 py-4">
+                    <Image
+                      alt={name}
+                      height={32}
+                      src={`https://s2.coinmarketcap.com/static/img/coins/32x32/${crypto.id}.png`}
+                      width={32}
+                    />
+                    <span className="pl-2">{name}</span>
+                  </td>
                   <td className="whitespace-nowrap px-6 py-4">{symbol}</td>
                   <td className="whitespace-nowrap px-6 py-4">${USD.price.toFixed(2)}</td>
                   <td className="whitespace-nowrap px-6 py-4">
@@ -150,6 +167,8 @@ const CryptoTable: FC = () => {
           onClose={() => setSelectedCrypto(undefined)}
         />
       )}
+
+      <TablePagination searchPage={searchPage} />
     </div>
   );
 };

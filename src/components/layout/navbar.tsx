@@ -4,7 +4,7 @@ import type { FC } from 'react';
 import { useEffect, useState } from 'react';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
@@ -13,6 +13,7 @@ import { NAV_ITEMS } from '@/constants';
 
 const Navbar: FC = () => {
   const pathname = usePathname();
+  const router = useRouter();
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [scrolled, setScrolled] = useState<boolean>(false);
@@ -26,6 +27,11 @@ const Navbar: FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleHomeClick = () => {
+    router.push('/?searchPage=1');
+    router.refresh();
+  };
+
   return (
     <nav
       className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 shadow-md backdrop-blur-md' : 'bg-transparent'}`}
@@ -33,11 +39,11 @@ const Navbar: FC = () => {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 justify-between">
           <div className="flex items-center">
-            <Link className="flex items-center" href="/">
+            <div className="flex items-center" onClick={handleHomeClick}>
               <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-2xl font-bold text-transparent">
                 Crypto Monitor
               </span>
-            </Link>
+            </div>
           </div>
 
           <div className="hidden items-center sm:ml-6 sm:flex sm:space-x-8">
