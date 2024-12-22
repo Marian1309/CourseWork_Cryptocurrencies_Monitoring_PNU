@@ -3,9 +3,10 @@
 import type { FC, ReactNode } from 'react';
 import { useMemo } from 'react';
 
+import type { QueryClientConfig } from '@tanstack/react-query';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const defaultQueryClientConfig = {
+const defaultQueryClientConfig: QueryClientConfig = {
   defaultOptions: {
     queries: {
       staleTime: 60 * 1000, // 1 хвилина

@@ -1,21 +1,21 @@
 import type { FC, ReactNode } from 'react';
 
 import type { Metadata } from 'next';
-import { Figtree } from 'next/font/google';
+import { Inter } from 'next/font/google';
 
 import Providers from './providers';
 
 import './globals.scss';
 
-const figtree = Figtree({
+const inter = Inter({
   subsets: ['latin'],
   weight: ['400'],
-  variable: '--font-figtree'
+  variable: '--font-inter'
 });
 
 export const metadata: Metadata = {
-  title: 'Next.js 14 Starter App',
-  description: 'Next.js 14 Basic Starter App'
+  title: 'Cryptocurrency Monitoring App',
+  description: 'Monitor cryptocurrency prices and market data'
 };
 
 type Properties = {
@@ -25,10 +25,8 @@ type Properties = {
 const RootLayout: FC<Properties> = ({ children }) => {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={figtree.variable}>
-        <Providers>
-          <main>{children}</main>
-        </Providers>
+      <body className={inter.variable}>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

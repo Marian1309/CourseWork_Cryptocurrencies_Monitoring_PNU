@@ -13,7 +13,17 @@ const nextConfig = {
   },
   compress: true,
   poweredByHeader: false,
-  optimizeFonts: true
+  optimizeFonts: true,
+  webpack: (config, { webpack }) => {
+    config.plugins = [
+      ...config.plugins,
+      new webpack.DefinePlugin({
+        __REACT_DEVTOOLS_GLOBAL_HOOK__: '({ isDisabled: true })'
+      })
+    ];
+
+    return config;
+  }
 };
 
 export default withBundleAnalyzer(nextConfig);

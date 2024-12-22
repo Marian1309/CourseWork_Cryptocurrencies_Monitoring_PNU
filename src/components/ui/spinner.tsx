@@ -8,7 +8,7 @@ type Properties = {
   loading?: boolean;
 };
 
-const Loading: FC<Properties> = ({ loading = true }) => {
+const Spinner: FC<Properties> = ({ loading = true }) => {
   return (
     <div className="min-h-screen flex-center">
       <BounceLoader color="hsl(var(--text-accent))" loading={loading} size={40} />
@@ -16,4 +16,4 @@ const Loading: FC<Properties> = ({ loading = true }) => {
   );
 };
 
-export default Loading;
+export default Spinner;
