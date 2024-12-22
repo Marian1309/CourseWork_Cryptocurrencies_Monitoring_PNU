@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const api = axios.create({
-  baseURL: 'http://localhost:3000'
+const coinMarketCapApi = axios.create({
+  baseURL: 'https://pro-api.coinmarketcap.com/v1/cryptocurrency'
 });
 
-export default api;
+export default coinMarketCapApi;

@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import tailwindcssAnimate from 'tailwindcss-animate';
 import plugin from 'tailwindcss/plugin';
 
 const shadcnUIColors = {
@@ -59,7 +60,7 @@ const config = {
     },
     extend: {
       fontFamily: {
-        primary: 'var(--font-figtree)'
+        primary: 'var(--font-inter)'
       },
       colors: {
         ...shadcnUIColors,
@@ -90,7 +91,7 @@ const config = {
     }
   },
   plugins: [
-    require('tailwindcss-animate'),
+    tailwindcssAnimate,
     plugin(({ addUtilities }: any) => {
       addUtilities({
         '.flex-center': {

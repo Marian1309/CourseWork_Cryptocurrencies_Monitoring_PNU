@@ -1,9 +1,20 @@
-import type { FC, PropsWithChildren } from 'react';
+import type { FC, ReactNode } from 'react';
 
-type Properties = PropsWithChildren;
+import { TanstackQueryProvider } from '@/components/providers';
+import { Toaster } from '@/components/ui/toaster';
 
-const Providers: FC<Properties> = ({ children }) => {
-  return <>{children}</>;
+type Properties = {
+  children: ReactNode;
+  className?: string;
+};
+
+const Providers: FC<Properties> = ({ children, className }) => {
+  return (
+    <main className={className}>
+      <TanstackQueryProvider>{children}</TanstackQueryProvider>
+      <Toaster />
+    </main>
+  );
 };
 
 export default Providers;
