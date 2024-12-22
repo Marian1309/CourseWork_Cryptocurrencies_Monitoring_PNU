@@ -1,8 +1,19 @@
 import type { NextPage } from 'next';
+import { redirect } from 'next/navigation';
 
 import CryptoTable from './_components/crypto-table';
 
-const HomePage: NextPage = () => {
+type Properties = {
+  searchParams: {
+    searchPage: string;
+  };
+};
+
+const HomePage: NextPage<Properties> = ({ searchParams }) => {
+  if (!searchParams.searchPage) {
+    redirect(`/?searchPage=1`);
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
@@ -14,7 +25,7 @@ const HomePage: NextPage = () => {
               specific cryptocurrency.
             </p>
 
-            <CryptoTable />
+            <CryptoTable searchPage={+searchParams.searchPage} />
           </div>
         </div>
       </div>
