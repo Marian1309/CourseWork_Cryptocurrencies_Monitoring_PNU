@@ -1,12 +1,15 @@
-import type { FC, PropsWithChildren } from 'react';
+import type { FC, ReactNode } from 'react';
 
 import { TanstackQueryProvider } from '@/components/providers';
 
-type Properties = PropsWithChildren;
+type Properties = {
+  children: ReactNode;
+  className?: string;
+};
 
-const Providers: FC<Properties> = ({ children }) => {
+const Providers: FC<Properties> = ({ children, className }) => {
   return (
-    <main>
+    <main className={className}>
       <TanstackQueryProvider>{children}</TanstackQueryProvider>
     </main>
   );

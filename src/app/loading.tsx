@@ -1,9 +1,9 @@
 import type { FC } from 'react';
 
-import Spinner from '@/components/ui/spinner';
+import Loader from '@/components/ui/loader';
 
 const Loading: FC = () => {
-  return <Spinner />;
+  return <Loader />;
 };
 
 export default Loading;

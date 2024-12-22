@@ -8,8 +8,6 @@ const CMC_API_KEY = process.env['X_CMC_PRO_API_KEY'];
 export const GET = async (request: NextRequest) => {
   const searchParameters = request.nextUrl.searchParams;
 
-  console.log({ searchParameters });
-
   const start = searchParameters.get('start') || '1';
   const limit = searchParameters.get('limit') || '100';
   const sort = searchParameters.get('sort') || 'market_cap';

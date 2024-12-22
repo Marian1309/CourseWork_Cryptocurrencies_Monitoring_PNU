@@ -2,8 +2,12 @@ import { useQuery } from '@tanstack/react-query';
 
 import type { SortConfig } from '@/types/globals';
 
+import { CRYPTO_LIMIT } from '@/constants';
+
 const fetchCryptoData = async ({ key, direction }: SortConfig) => {
-  const response = await fetch(`/api/crypto?sort=${key}&sort_dir=${direction}`);
+  const response = await fetch(
+    `/api/crypto?sort=${key}&sort_dir=${direction}&limit=${CRYPTO_LIMIT}`
+  );
 
   if (!response.ok) {
     throw new Error('Failed to fetch crypto data');

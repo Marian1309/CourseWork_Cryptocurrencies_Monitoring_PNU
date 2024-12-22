@@ -5,7 +5,11 @@ import { useCallback, useMemo, useState } from 'react';
 
 import type { CryptoData, SortConfig } from '@/types/globals';
 
+import { cn } from '@/lib/utils';
+
 import useCrypto from '@/hooks/use-crypto';
+
+import Loader from '@/components/ui/loader';
 
 import { TABLE_HEADERS } from '@/constants';
 
@@ -25,31 +29,58 @@ const CryptoTable: FC = () => {
   const handleSort = useCallback((key: string) => {
     setSortConfig((previous) => ({
       key,
-      direction: previous.key === key && previous.direction === 'asc' ? 'desc' : 'asc'
+      direction: previous.key === key && previous.direction === 'desc' ? 'asc' : 'desc'
     }));
   }, []);
 
-  const filteredCryptoData = useMemo(() => {
+  const sortedAndFilteredCryptoData = useMemo(() => {
     if (!data) return [];
 
     const searchTermLower = searchTerm.toLowerCase();
-
-    return data.filter(
+    const filteredData = data.filter(
       ({ name, symbol }: CryptoData) =>
         name.toLowerCase().includes(searchTermLower) ||
         symbol.toLowerCase().includes(searchTermLower)
-    ) as CryptoData[];
-  }, [data, searchTerm]);
+    );
+
+    return filteredData.sort((a: CryptoData, b: CryptoData) => {
+      if (sortConfig.key === 'name' || sortConfig.key === 'symbol') {
+        return sortConfig.direction === 'asc'
+          ? a[sortConfig.key].localeCompare(b[sortConfig.key])
+          : b[sortConfig.key].localeCompare(a[sortConfig.key]);
+      } else {
+        const aValue = a.quote.USD[sortConfig.key as keyof typeof a.quote.USD];
+        const bValue = b.quote.USD[sortConfig.key as keyof typeof b.quote.USD];
+        return sortConfig.direction === 'asc'
+          ? (aValue as number) - (bValue as number)
+          : (bValue as number) - (aValue as number);
+      }
+    });
+  }, [data, searchTerm, sortConfig]);
 
   const handleCryptoClick = useCallback((crypto: CryptoData) => {
     setSelectedCrypto(crypto);
   }, []);
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
+  if (isLoading)
+    return (
+      <div className="relative flex-1 flex-center">
+        <Loader />
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="text-center text-red-500">
+          <p className="mb-2 text-2xl font-bold">Error</p>
+          <p>{error.message}</p>
+        </div>
+      </div>
+    );
 
   return (
-    <div>
+    <div className={cn(isLoading && 'absolute')}>
       <TableSearchInput
         placeholder="Search by name or symbol..."
         searchTerm={searchTerm}
@@ -78,7 +109,7 @@ const CryptoTable: FC = () => {
           </thead>
 
           <tbody className="divide-y divide-gray-200">
-            {filteredCryptoData.map((crypto) => {
+            {sortedAndFilteredCryptoData.map((crypto: CryptoData) => {
               const {
                 name,
                 symbol,
