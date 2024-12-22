@@ -15,9 +15,34 @@ const inter = Inter({
   variable: '--font-inter'
 });
 
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https:crypto-monitor.pidchashyi.dev';
+
 export const metadata: Metadata = {
-  title: 'Cryptocurrency Monitoring App',
-  description: 'Monitor cryptocurrency prices and market data'
+  metadataBase: new URL(baseUrl),
+  title: {
+    default: 'Crypto Monitor | Real-time Cryptocurrency Tracking',
+    template: '%s | Crypto Monitor'
+  },
+  description:
+    'Track cryptocurrency prices, manage your portfolio, and stay updated with the latest crypto news in real-time.',
+  keywords: [
+    'cryptocurrency',
+    'crypto',
+    'bitcoin',
+    'ethereum',
+    'blockchain',
+    'trading',
+    'investment',
+    'finance'
+  ],
+  authors: [{ name: 'Crypto Monitor Team' }],
+  creator: 'Crypto Monitor',
+  publisher: 'Crypto Monitor',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false
+  }
 };
 
 type Properties = {

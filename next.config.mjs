@@ -9,7 +9,12 @@ const nextConfig = {
   reactStrictMode: false,
   swcMinify: true,
   images: {
-    remotePatterns: []
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com'
+      }
+    ]
   },
   compress: true,
   poweredByHeader: false,
