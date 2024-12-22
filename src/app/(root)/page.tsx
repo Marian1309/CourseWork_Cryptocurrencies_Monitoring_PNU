@@ -9,6 +9,8 @@ type Properties = {
   };
 };
 
+export const runtime = 'experimental-edge';
+
 const HomePage: NextPage<Properties> = ({ searchParams }) => {
   if (!searchParams.searchPage) {
     redirect(`/?searchPage=1`);
