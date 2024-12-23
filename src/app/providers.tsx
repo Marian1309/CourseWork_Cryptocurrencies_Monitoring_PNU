@@ -1,6 +1,6 @@
 import type { FC, ReactNode } from 'react';
 
-import { SettingsProvider } from '@/context/settings';
+import SettingsProvider from '@/context/settings';
 
 import { TanstackQueryProvider } from '@/components/providers';
 import { ThemeProvider } from '@/components/providers/next-themes';

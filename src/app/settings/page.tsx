@@ -1,5 +1,6 @@
 'use client';
 
+import type { FC } from 'react';
 import { useEffect, useState } from 'react';
 
 import { toast } from '@/hooks/use-toast';
@@ -14,6 +15,7 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Loader from '@/components/ui/loader';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -28,8 +30,10 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-export default function SettingsPage() {
-  const { settings, updateSettings, changeTheme } = useSettings();
+import Saving from './_components/saving';
+
+const SettingsPage: FC = () => {
+  const { settings, updateSettings } = useSettings();
   const [temporarySettings, setTemporarySettings] = useState(settings);
 
   useEffect(() => {
@@ -61,12 +65,15 @@ export default function SettingsPage() {
           <TabsTrigger className="flex-1" value="general">
             General
           </TabsTrigger>
+
           <TabsTrigger className="flex-1" value="notifications">
             Notifications
           </TabsTrigger>
+
           <TabsTrigger className="flex-1" value="display">
             Display
           </TabsTrigger>
+
           <TabsTrigger className="flex-1" value="account">
             Account
           </TabsTrigger>
@@ -93,10 +100,12 @@ export default function SettingsPage() {
                       <RadioGroupItem id="light" value="light" />
                       <Label htmlFor="light">Light</Label>
                     </div>
+
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem id="dark" value="dark" />
                       <Label htmlFor="dark">Dark</Label>
                     </div>
+
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem id="system" value="system" />
                       <Label htmlFor="system">System</Label>
@@ -117,6 +126,7 @@ export default function SettingsPage() {
                     <SelectTrigger id="currency">
                       <SelectValue placeholder="Select currency" />
                     </SelectTrigger>
+
                     <SelectContent>
                       <SelectItem value="USD">USD</SelectItem>
                       <SelectItem value="EUR">EUR</SelectItem>
@@ -201,6 +211,7 @@ export default function SettingsPage() {
               <CardTitle>Display Settings</CardTitle>
               <CardDescription>Customize your viewing experience</CardDescription>
             </CardHeader>
+
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="display-mode">Display Mode</Label>
@@ -219,12 +230,14 @@ export default function SettingsPage() {
                     <RadioGroupItem id="compact" value="compact" />
                     <Label htmlFor="compact">Compact</Label>
                   </div>
+
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem id="comfortable" value="comfortable" />
                     <Label htmlFor="comfortable">Comfortable</Label>
                   </div>
                 </RadioGroup>
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="default-view">Default View</Label>
                 <RadioGroup
@@ -242,6 +255,7 @@ export default function SettingsPage() {
                     <RadioGroupItem id="list" value="list" />
                     <Label htmlFor="list">List</Label>
                   </div>
+
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem id="grid" value="grid" />
                     <Label htmlFor="grid">Grid</Label>
@@ -258,19 +272,21 @@ export default function SettingsPage() {
               <CardTitle>Account Settings</CardTitle>
               <CardDescription>Manage your account preferences</CardDescription>
             </CardHeader>
+
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <input
+                <Input
                   className="w-full rounded border p-2"
                   id="email"
                   placeholder="your@email.com"
                   type="email"
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <input
+                <Input
                   className="w-full rounded border p-2"
                   id="password"
                   placeholder="••••••••"
@@ -283,12 +299,13 @@ export default function SettingsPage() {
         </TabsContent>
       </Tabs>
 
-      <div className="mt-6 flex justify-end space-x-4">
-        <Button onClick={() => setTemporarySettings(settings)} variant="outline">
-          Cancel
-        </Button>
-        <Button onClick={handleSave}>Save Changes</Button>
-      </div>
+      <Saving
+        handleSave={handleSave}
+        setTemporarySettings={setTemporarySettings}
+        settings={settings!}
+      />
     </div>
   );
-}
+};
+
+export default SettingsPage;

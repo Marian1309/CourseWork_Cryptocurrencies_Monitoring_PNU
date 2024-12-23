@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import type { FC, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 import type { Settings } from '@prisma/client';
 import { useTheme } from 'next-themes';
@@ -21,21 +22,26 @@ const defaultSettings: Settings = {
   currency: 'USD',
   refreshInterval: 60_000,
   priceAlerts: true,
-  newsUpdates: true,
   portfolioSummary: false,
   displayMode: 'comfortable',
   defaultView: 'list'
 };
 
-export function SettingsProvider({ children }: { children: React.ReactNode }) {
+type Properties = {
+  children: ReactNode;
+};
+
+const SettingsProvider: FC<Properties> = ({ children }) => {
   const [settings, setSettings] = useState<Settings | undefined>();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
   const { setTheme } = useTheme();
 
   useEffect(() => {
     const fetchSettings = async () => {
       try {
         const response = await fetch('/api/settings');
+
         if (response.ok) {
           const data = await response.json();
           setTheme(data.theme);
@@ -95,12 +101,16 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       {children}
     </SettingsContext.Provider>
   );
-}
+};
 
 export const useSettings = () => {
   const context = useContext(SettingsContext);
+
   if (context === undefined) {
     throw new Error('useSettings must be used within a SettingsProvider');
   }
+
   return context;
 };
+
+export default SettingsProvider;

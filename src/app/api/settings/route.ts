@@ -27,7 +27,6 @@ export const GET = async () => {
           currency: 'USD',
           refreshInterval: 60_000,
           priceAlerts: true,
-          newsUpdates: true,
           portfolioSummary: false,
           displayMode: 'comfortable',
           defaultView: 'list'
@@ -59,7 +58,6 @@ export const PUT = async (request: NextRequest) => {
       currency: body.currency,
       refreshInterval: body.refreshInterval,
       priceAlerts: body.priceAlerts,
-      newsUpdates: body.newsUpdates,
       portfolioSummary: body.portfolioSummary,
       displayMode: body.displayMode,
       defaultView: body.defaultView
@@ -71,7 +69,6 @@ export const PUT = async (request: NextRequest) => {
       currency: body.currency ?? 'USD',
       refreshInterval: body.refreshInterval ?? 60_000,
       priceAlerts: body.priceAlerts ?? true,
-      newsUpdates: body.newsUpdates ?? true,
       portfolioSummary: body.portfolioSummary ?? false,
       displayMode: body.displayMode ?? 'comfortable',
       defaultView: body.defaultView ?? 'list'

@@ -14,7 +14,6 @@ model Settings {
   currency         String  @default("USD")
   refreshInterval  Int     @default(60000)
   priceAlerts      Boolean @default(true)
-  newsUpdates      Boolean @default(true)
   portfolioSummary Boolean @default(false)
   displayMode      String  @default("comfortable")
   defaultView      String  @default("list")

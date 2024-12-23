@@ -15,7 +15,7 @@ type Properties = {
 
 const TablePagination: FC<Properties> = ({ searchPage }) => {
   const [currentPage, setCurrentPage] = useState(searchPage);
-  const totalPages = 417;
+  const totalPages = 350;
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
