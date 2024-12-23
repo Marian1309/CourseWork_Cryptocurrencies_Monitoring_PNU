@@ -3,7 +3,11 @@ import type { FC, ReactNode } from 'react';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
+import { ClerkLoaded, ClerkLoading, ClerkProvider } from '@clerk/nextjs';
+import { currentUser } from '@clerk/nextjs/server';
+
 import Navbar from '@/components/layout/navbar';
+import Loader from '@/components/ui/loader';
 
 import Providers from './providers';
 
@@ -49,19 +53,29 @@ type Properties = {
   children: ReactNode;
 };
 
-const RootLayout: FC<Properties> = ({ children }) => {
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.variable}>
-        <div className="flex min-h-screen flex-col">
-          <Navbar />
+const RootLayout: FC<Properties> = async ({ children }) => {
+  const user = await currentUser();
 
-          <Providers className="flex-1 overflow-y-auto bg-gray-100 pt-12">
-            <div className="mx-auto max-w-7xl">{children}</div>
-          </Providers>
-        </div>
-      </body>
-    </html>
+  return (
+    <ClerkProvider>
+      <html lang="en" suppressHydrationWarning>
+        <body className={inter.variable}>
+          <div className="flex min-h-screen flex-col">
+            <ClerkLoading>
+              <Loader className="min-h-screen text-2xl flex-center" size={40} />
+            </ClerkLoading>
+
+            <ClerkLoaded>
+              <Navbar isSignedIn={!!user} />
+
+              <Providers className="flex-1 overflow-y-auto bg-gray-100 pt-12">
+                <div className="mx-auto max-w-7xl">{children}</div>
+              </Providers>
+            </ClerkLoaded>
+          </div>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 };
 
