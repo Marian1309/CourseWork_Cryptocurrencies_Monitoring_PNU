@@ -98,7 +98,7 @@ const CryptoTable: FC<Properties> = ({ searchPage }) => {
   if (error)
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="text-center text-red-500">
+        <div className="text-center text-red-500 dark:text-red-400">
           <p className="mb-2 text-2xl font-bold">Error</p>
           <p>{error.message}</p>
         </div>
@@ -114,16 +114,16 @@ const CryptoTable: FC<Properties> = ({ searchPage }) => {
       />
 
       <div className="overflow-x-auto rounded-lg shadow">
-        <table className="min-w-full bg-white">
-          <thead className="bg-gray-100">
+        <table className="min-w-full bg-white dark:bg-gray-800">
+          <thead className="bg-gray-100 dark:bg-gray-700">
             <tr>
               {TABLE_HEADERS.map(({ label, key }) => (
                 <th
-                  className="cursor-pointer px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 hover:bg-gray-200"
+                  className="cursor-pointer px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-600"
                   key={key}
                   onClick={() => handleSort(key)}
                 >
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center space-x-1 dark:text-gray-400">
                     <span>{label}</span>
                     {sortConfig.key === key && (
                       <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
@@ -134,7 +134,7 @@ const CryptoTable: FC<Properties> = ({ searchPage }) => {
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {sortedAndFilteredCryptoData.map((crypto: CryptoData) => {
               const {
                 name,
@@ -145,7 +145,7 @@ const CryptoTable: FC<Properties> = ({ searchPage }) => {
 
               return (
                 <tr
-                  className="cursor-pointer transition-colors hover:bg-gray-50"
+                  className="cursor-pointer transition-colors hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800"
                   key={crypto.id}
                   onClick={() => handleCryptoClick(crypto)}
                 >

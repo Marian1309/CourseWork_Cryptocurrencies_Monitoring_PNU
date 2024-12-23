@@ -10,10 +10,11 @@ export const GET = async (request: NextRequest) => {
   const limit = searchParameters.get('limit') || '100';
   const sort = searchParameters.get('sort') || 'market_cap';
   const sortDirection = searchParameters.get('sort_dir') || 'desc';
+  const currency = searchParameters.get('currency') || 'USD';
 
   try {
     const response = await coinMarketCapApi.get(
-      `/v1/cryptocurrency/listings/latest?start=${start}&limit=${limit}&sort=${sort}&sort_dir=${sortDirection}`
+      `/v1/cryptocurrency/listings/latest?start=${start}&limit=${limit}&sort=${sort}&sort_dir=${sortDirection}&convert=${currency}`
     );
 
     if (response.status !== 200) {

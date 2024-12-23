@@ -20,7 +20,7 @@ const TableSearchInput: FC<TableSearchInputProperties> = memo(
       <div className="mb-4">
         <Input
           aria-label="Search cryptocurrencies"
-          className="w-full rounded-lg border border-gray-200 p-2 shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+          className="w-full rounded-lg border border-gray-200 p-2 shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:focus:border-blue-500 dark:focus:ring-blue-200"
           onChange={handleInputChange}
           placeholder={placeholder}
           type="text"

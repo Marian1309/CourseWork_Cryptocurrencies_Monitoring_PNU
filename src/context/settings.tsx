@@ -3,13 +3,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 import type { Settings } from '@prisma/client';
-
-import prettyPrint from '@/lib/pretty-print';
+import { useTheme } from 'next-themes';
 
 type SettingsContextType = {
   settings: Settings | null;
   updateSettings: (newSettings: Partial<Settings>) => Promise<void>;
   isLoading: boolean;
+  changeTheme: (theme: 'light' | 'dark' | 'system') => void;
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -30,6 +30,7 @@ const defaultSettings: Settings = {
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<Settings | undefined>();
   const [isLoading, setIsLoading] = useState(true);
+  const { setTheme } = useTheme();
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -37,14 +38,16 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         const response = await fetch('/api/settings');
         if (response.ok) {
           const data = await response.json();
-          prettyPrint(data);
+          setTheme(data.theme);
           setSettings(data);
         } else {
           console.error('Failed to fetch settings');
+          setTheme(defaultSettings.theme);
           setSettings(defaultSettings);
         }
       } catch (error) {
         console.error('Error fetching settings:', error);
+        setTheme(defaultSettings.theme);
         setSettings(defaultSettings);
       } finally {
         setIsLoading(false);
@@ -52,7 +55,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     };
 
     fetchSettings();
-  }, []);
+  }, [setTheme]);
 
   const updateSettings = async (newSettings: Partial<Settings>) => {
     try {
@@ -64,6 +67,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         const updatedSettings = await response.json();
         setSettings(updatedSettings);
+        if (newSettings.theme) {
+          setTheme(newSettings.theme);
+        }
       } else {
         console.error('Failed to update settings');
       }
@@ -71,9 +77,20 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       console.error('Error updating settings:', error);
     }
   };
+
+  const changeTheme = (theme: 'light' | 'dark' | 'system') => {
+    setTheme(theme);
+    updateSettings({ theme });
+  };
+
   return (
     <SettingsContext.Provider
-      value={{ settings: settings || defaultSettings, updateSettings, isLoading }}
+      value={{
+        settings: settings || defaultSettings,
+        updateSettings,
+        isLoading,
+        changeTheme
+      }}
     >
       {children}
     </SettingsContext.Provider>

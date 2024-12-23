@@ -68,7 +68,7 @@ const RootLayout: FC<Properties> = async ({ children }) => {
             <ClerkLoaded>
               <Navbar isSignedIn={!!user} />
 
-              <Providers className="flex-1 overflow-y-auto bg-gray-100 pt-12">
+              <Providers className="flex-1 overflow-y-auto bg-gray-100 pt-12 dark:bg-gray-900">
                 <div className="mx-auto max-w-7xl">{children}</div>
               </Providers>
             </ClerkLoaded>

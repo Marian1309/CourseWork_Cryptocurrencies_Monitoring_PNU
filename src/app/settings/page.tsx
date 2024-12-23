@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 
-import prettyPrint from '@/lib/pretty-print';
-
 import { toast } from '@/hooks/use-toast';
 
 import { useSettings } from '@/context/settings';
@@ -31,14 +29,18 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function SettingsPage() {
-  const { settings, updateSettings } = useSettings();
-
-  prettyPrint({ settings });
-
+  const { settings, updateSettings, changeTheme } = useSettings();
   const [temporarySettings, setTemporarySettings] = useState(settings);
-  const handleSave = () => {
+
+  useEffect(() => {
+    if (settings) {
+      setTemporarySettings(settings);
+    }
+  }, [settings]);
+
+  const handleSave = async () => {
     if (temporarySettings) {
-      updateSettings(temporarySettings);
+      await updateSettings(temporarySettings);
       toast({
         title: 'Settings saved',
         description: 'Your preferences have been updated.'
@@ -46,20 +48,28 @@ export default function SettingsPage() {
     }
   };
 
-  useEffect(() => {
-    setTemporarySettings(settings);
-  }, [settings]);
+  const handleThemeChange = (theme: 'light' | 'dark' | 'system') => {
+    setTemporarySettings({ ...temporarySettings, theme } as any);
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="mb-6 text-3xl font-bold">Settings</h1>
 
       <Tabs className="space-y-4" defaultValue="general">
-        <TabsList>
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="display">Display</TabsTrigger>
-          <TabsTrigger value="account">Account</TabsTrigger>
+        <TabsList className="flex">
+          <TabsTrigger className="flex-1" value="general">
+            General
+          </TabsTrigger>
+          <TabsTrigger className="flex-1" value="notifications">
+            Notifications
+          </TabsTrigger>
+          <TabsTrigger className="flex-1" value="display">
+            Display
+          </TabsTrigger>
+          <TabsTrigger className="flex-1" value="account">
+            Account
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="general">
@@ -76,12 +86,7 @@ export default function SettingsPage() {
                   <RadioGroup
                     className="flex space-x-4"
                     id="theme"
-                    onValueChange={(value) =>
-                      setTemporarySettings((previous) => ({
-                        ...previous!,
-                        theme: value as 'light' | 'dark' | 'system'
-                      }))
-                    }
+                    onValueChange={handleThemeChange}
                     value={temporarySettings?.theme}
                   >
                     <div className="flex items-center space-x-2">
@@ -172,19 +177,7 @@ export default function SettingsPage() {
                   }
                 />
               </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="news-updates">News Updates</Label>
-                <Switch
-                  checked={temporarySettings?.newsUpdates}
-                  id="news-updates"
-                  onCheckedChange={(checked) =>
-                    setTemporarySettings((previous) => ({
-                      ...previous!,
-                      newsUpdates: checked
-                    }))
-                  }
-                />
-              </div>
+
               <div className="flex items-center justify-between">
                 <Label htmlFor="portfolio-summary">Portfolio Summary</Label>
                 <Switch

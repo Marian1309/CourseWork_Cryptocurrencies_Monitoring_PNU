@@ -40,13 +40,13 @@ const Navbar: FC<Properties> = ({ isSignedIn }) => {
 
   return (
     <nav
-      className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 shadow-md backdrop-blur-md' : 'bg-transparent'}`}
+      className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 shadow-md backdrop-blur-md dark:bg-gray-900' : 'bg-transparent'}`}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 justify-between">
           <div className="flex items-center">
             <div className="flex items-center" onClick={handleHomeClick}>
-              <span className="cursor-pointer bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-2xl font-bold text-transparent">
+              <span className="cursor-pointer bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-2xl font-bold text-transparent dark:text-white">
                 Crypto Monitor
               </span>
             </div>
@@ -61,7 +61,7 @@ const Navbar: FC<Properties> = ({ isSignedIn }) => {
                   className={`inline-flex items-center px-1 py-1 text-sm font-medium transition-all duration-300 ${
                     isActive
                       ? 'border-b-2 border-blue-500 text-blue-600'
-                      : 'text-gray-500 hover:border-b-[2px] hover:border-gray-300 hover:pb-1 hover:text-gray-900'
+                      : 'text-gray-500 hover:border-b-[2px] hover:border-gray-300 hover:pb-1 hover:text-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-100'
                   }`}
                   href={item.href}
                   key={item.name}
