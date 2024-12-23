@@ -4,14 +4,17 @@ import type { FC } from 'react';
 
 import { Loader2 } from 'lucide-react';
 
+import { cn } from '@/lib/utils';
+
 type Properties = {
-  loading?: boolean;
+  className?: string;
+  size?: number;
 };
 
-const Loader: FC<Properties> = () => {
+const Loader: FC<Properties> = ({ className, size = 32 }) => {
   return (
-    <div className="flex h-full items-center justify-center">
-      <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+    <div className={cn('flex h-full items-center justify-center', className)}>
+      <Loader2 className="animate-spin text-blue-500" size={size} />
     </div>
   );
 };

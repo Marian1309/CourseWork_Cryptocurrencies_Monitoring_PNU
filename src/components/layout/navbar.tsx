@@ -6,12 +6,17 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
+import { SignInButton, UserButton } from '@clerk/nextjs';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
 import { NAV_ITEMS } from '@/constants';
 
-const Navbar: FC = () => {
+type Properties = {
+  isSignedIn: boolean;
+};
+
+const Navbar: FC<Properties> = ({ isSignedIn }) => {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -29,7 +34,6 @@ const Navbar: FC = () => {
 
   const handleHomeClick = () => {
     router.push('/?searchPage=1');
-    router.refresh();
   };
 
   return (
@@ -40,15 +44,16 @@ const Navbar: FC = () => {
         <div className="flex h-16 justify-between">
           <div className="flex items-center">
             <div className="flex items-center" onClick={handleHomeClick}>
-              <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-2xl font-bold text-transparent">
+              <span className="cursor-pointer bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-2xl font-bold text-transparent">
                 Crypto Monitor
               </span>
             </div>
           </div>
 
-          <div className="hidden items-center sm:ml-6 sm:flex sm:space-x-8">
+          <div className="hidden items-center sm:ml-6 sm:flex sm:space-x-6">
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href;
+
               return (
                 <Link
                   className={`inline-flex items-center px-1 py-1 text-sm font-medium transition-all duration-300 ${
@@ -64,6 +69,8 @@ const Navbar: FC = () => {
                 </Link>
               );
             })}
+
+            {isSignedIn ? <UserButton /> : <SignInButton />}
           </div>
 
           <div className="flex items-center sm:hidden">
@@ -74,6 +81,7 @@ const Navbar: FC = () => {
               type="button"
             >
               <span className="sr-only">Open main menu</span>
+
               {isOpen ? (
                 <X aria-hidden="true" className="block h-6 w-6" />
               ) : (
