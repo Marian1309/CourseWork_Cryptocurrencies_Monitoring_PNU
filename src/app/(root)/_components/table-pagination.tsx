@@ -15,7 +15,7 @@ type Properties = {
 
 const TablePagination: FC<Properties> = ({ searchPage }) => {
   const [currentPage, setCurrentPage] = useState(searchPage);
-  const totalPages = 417;
+  const totalPages = 350;
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -25,7 +25,7 @@ const TablePagination: FC<Properties> = ({ searchPage }) => {
     const items = [];
 
     items.push(
-      <PaginationItem key={1}>
+      <PaginationItem className="dark:text-gray-400" key={1}>
         <PaginationLink
           href={`/?searchPage=1`}
           isActive={currentPage === 1}
@@ -38,7 +38,7 @@ const TablePagination: FC<Properties> = ({ searchPage }) => {
 
     if (currentPage > 3) {
       items.push(
-        <PaginationItem key="ellipsis1">
+        <PaginationItem className="dark:text-gray-400" key="ellipsis1">
           <PaginationEllipsis />
         </PaginationItem>
       );
@@ -50,7 +50,7 @@ const TablePagination: FC<Properties> = ({ searchPage }) => {
       index++
     ) {
       items.push(
-        <PaginationItem key={index}>
+        <PaginationItem className="dark:text-gray-400" key={index}>
           <PaginationLink
             href={`/?searchPage=${index}`}
             isActive={currentPage === index}
@@ -64,14 +64,14 @@ const TablePagination: FC<Properties> = ({ searchPage }) => {
 
     if (currentPage < totalPages - 2) {
       items.push(
-        <PaginationItem key="ellipsis2">
+        <PaginationItem className="dark:text-gray-400" key="ellipsis2">
           <PaginationEllipsis />
         </PaginationItem>
       );
     }
 
     items.push(
-      <PaginationItem key={totalPages}>
+      <PaginationItem className="dark:text-gray-400" key={totalPages}>
         <PaginationLink
           href={`/?searchPage=${totalPages}`}
           isActive={currentPage === totalPages}
@@ -86,8 +86,10 @@ const TablePagination: FC<Properties> = ({ searchPage }) => {
   };
 
   return (
-    <Pagination className="pt-4">
-      <PaginationContent>{renderPaginationItems()}</PaginationContent>
+    <Pagination className="pt-4 dark:text-gray-400">
+      <PaginationContent className="dark:text-gray-400">
+        {renderPaginationItems()}
+      </PaginationContent>
     </Pagination>
   );
 };

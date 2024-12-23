@@ -23,20 +23,22 @@ const CryptoDetails: FC<CryptoDetailsProperties> = ({ crypto, onClose }) => {
       className="fixed inset-0 h-full w-full overflow-y-auto bg-gray-600 bg-opacity-50"
       id="my-modal"
     >
-      <div className="relative top-20 mx-auto w-96 rounded-md border bg-white p-5 shadow-lg">
+      <div className="relative top-20 mx-auto w-96 rounded-md border bg-white p-5 shadow-lg dark:bg-gray-800">
         <div className="mt-3 text-center">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">
+          <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white">
             {name} ({symbol})
           </h3>
 
           <div className="mt-2 px-7 py-3">
-            <p className="text-sm text-gray-500">Rank: {cmc_rank}</p>
-            <p className="text-sm text-gray-500">Price: ${USD.price.toFixed(2)}</p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">Rank: {cmc_rank}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Price: ${USD.price.toFixed(2)}
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Market Cap: ${USD.market_cap.toLocaleString()}
             </p>
 
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               24h Change:
               <span
                 className={USD.percent_change_24h > 0 ? 'text-green-600' : 'text-red-600'}
@@ -45,7 +47,7 @@ const CryptoDetails: FC<CryptoDetailsProperties> = ({ crypto, onClose }) => {
               </span>
             </p>
 
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               7d Change:
               <span
                 className={USD.percent_change_7d > 0 ? 'text-green-600' : 'text-red-600'}
@@ -54,11 +56,11 @@ const CryptoDetails: FC<CryptoDetailsProperties> = ({ crypto, onClose }) => {
               </span>
             </p>
 
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Volume (24h): ${USD.volume_24h.toLocaleString()}
             </p>
 
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Circulating Supply: {circulating_supply.toLocaleString()} {symbol}
             </p>
           </div>

@@ -9,7 +9,7 @@ export const TABLE_HEADERS = [
   { label: 'Market Cap', key: 'market_cap' }
 ] as const;
 
-export const CRYPTO_LIMIT = 25;
+export const CRYPTO_LIMIT = 30;
 
 export const NAV_ITEMS = [
   { name: 'Dashboard', href: '/', icon: Home },

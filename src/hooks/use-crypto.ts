@@ -18,11 +18,16 @@ const fetchCryptoData = async (searchPage: number, { key, direction }: SortConfi
   return response.json();
 };
 
-const useCrypto = (searchPage: number, sortConfig: SortConfig) => {
+const useCrypto = (
+  searchPage: number,
+  sortConfig: SortConfig,
+  refetchInterval: number
+) => {
   return useQuery({
     queryKey: ['crypto'],
     queryFn: () => fetchCryptoData(searchPage, sortConfig),
-    select: ({ data }) => data
+    select: ({ data }) => data,
+    refetchInterval
   });
 };
 

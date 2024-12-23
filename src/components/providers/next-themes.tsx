@@ -1,23 +1,35 @@
 'use client';
 
-import type { FC } from 'react';
 import { useEffect, useState } from 'react';
 
-import type { ThemeProviderProps } from 'next-themes';
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
+import {
+  ThemeProvider as NextThemesProvider,
+  type ThemeProviderProps
+} from 'next-themes';
 
-const ThemeProvider: FC<ThemeProviderProps> = ({ children, ...properties }) => {
-  const [isMounted, setIsMounted] = useState<boolean>(false);
+import { useSettings } from '@/context/settings';
+
+export function ThemeProvider({ children, ...properties }: ThemeProviderProps) {
+  const { settings } = useSettings();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
+    setMounted(true);
   }, []);
 
-  if (!isMounted) {
-    return;
+  if (!mounted) {
+    return <>{children}</>;
   }
 
-  return <NextThemesProvider {...properties}>{children}</NextThemesProvider>;
-};
-
-export default ThemeProvider;
+  return (
+    <NextThemesProvider
+      {...properties}
+      attribute="class"
+      enableSystem
+      forcedTheme={settings?.theme === 'system' ? undefined : settings?.theme}
+      themes={['light', 'dark']}
+    >
+      {children}
+    </NextThemesProvider>
+  );
+}
