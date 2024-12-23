@@ -1,9 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { useSettings } from '@/hooks/use-settings';
+import prettyPrint from '@/lib/pretty-print';
+
 import { toast } from '@/hooks/use-toast';
+
+import { useSettings } from '@/context/settings';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -14,6 +17,7 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import Loader from '@/components/ui/loader';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
@@ -29,19 +33,27 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export default function SettingsPage() {
   const { settings, updateSettings } = useSettings();
 
-  const [temporarySettings, setTemporarySettings] = useState(settings);
+  prettyPrint({ settings });
 
+  const [temporarySettings, setTemporarySettings] = useState(settings);
   const handleSave = () => {
-    updateSettings(temporarySettings);
-    toast({
-      title: 'Settings saved',
-      description: 'Your preferences have been updated.'
-    });
+    if (temporarySettings) {
+      updateSettings(temporarySettings);
+      toast({
+        title: 'Settings saved',
+        description: 'Your preferences have been updated.'
+      });
+    }
   };
+
+  useEffect(() => {
+    setTemporarySettings(settings);
+  }, [settings]);
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="mb-6 text-3xl font-bold">Settings</h1>
+
       <Tabs className="space-y-4" defaultValue="general">
         <TabsList>
           <TabsTrigger value="general">General</TabsTrigger>
@@ -51,81 +63,93 @@ export default function SettingsPage() {
         </TabsList>
 
         <TabsContent value="general">
-          <Card>
-            <CardHeader>
-              <CardTitle>General Settings</CardTitle>
-              <CardDescription>Manage your general preferences</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="theme">Theme</Label>
-                <RadioGroup
-                  className="flex space-x-4"
-                  id="theme"
-                  onValueChange={(value) =>
-                    setTemporarySettings({
-                      ...temporarySettings,
-                      theme: value as 'light' | 'dark' | 'system'
-                    })
-                  }
-                  value={temporarySettings.theme}
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem id="light" value="light" />
-                    <Label htmlFor="light">Light</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem id="dark" value="dark" />
-                    <Label htmlFor="dark">Dark</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem id="system" value="system" />
-                    <Label htmlFor="system">System</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="currency">Currency</Label>
-                <Select
-                  onValueChange={(value) =>
-                    setTemporarySettings({
-                      ...temporarySettings,
-                      currency: value as 'USD' | 'EUR' | 'GBP'
-                    })
-                  }
-                  value={temporarySettings.currency}
-                >
-                  <SelectTrigger id="currency">
-                    <SelectValue placeholder="Select currency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="USD">USD</SelectItem>
-                    <SelectItem value="EUR">EUR</SelectItem>
-                    <SelectItem value="GBP">GBP</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="refresh-interval">Refresh Interval (seconds)</Label>
-                <Slider
-                  id="refresh-interval"
-                  max={300}
-                  min={5}
-                  onValueChange={(value) =>
-                    setTemporarySettings({
-                      ...temporarySettings,
-                      refreshInterval: value[0] * 1000
-                    })
-                  }
-                  step={5}
-                  value={[temporarySettings.refreshInterval / 1000]}
-                />
-                <div className="text-sm text-gray-500">
-                  {temporarySettings.refreshInterval / 1000} seconds
+          {settings ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>General Settings</CardTitle>
+                <CardDescription>Manage your general preferences</CardDescription>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="theme">Theme</Label>
+                  <RadioGroup
+                    className="flex space-x-4"
+                    id="theme"
+                    onValueChange={(value) =>
+                      setTemporarySettings((previous) => ({
+                        ...previous!,
+                        theme: value as 'light' | 'dark' | 'system'
+                      }))
+                    }
+                    value={temporarySettings?.theme}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem id="light" value="light" />
+                      <Label htmlFor="light">Light</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem id="dark" value="dark" />
+                      <Label htmlFor="dark">Dark</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem id="system" value="system" />
+                      <Label htmlFor="system">System</Label>
+                    </div>
+                  </RadioGroup>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+                <div className="space-y-2">
+                  <Label htmlFor="currency">Currency</Label>
+                  <Select
+                    onValueChange={(value) =>
+                      setTemporarySettings((previous) => ({
+                        ...previous!,
+                        currency: value as 'USD' | 'EUR' | 'GBP'
+                      }))
+                    }
+                    value={temporarySettings?.currency}
+                  >
+                    <SelectTrigger id="currency">
+                      <SelectValue placeholder="Select currency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="USD">USD</SelectItem>
+                      <SelectItem value="EUR">EUR</SelectItem>
+                      <SelectItem value="GBP">GBP</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="refresh-interval">Refresh Interval (seconds)</Label>
+                  <Slider
+                    id="refresh-interval"
+                    max={300}
+                    min={5}
+                    onValueChange={(value) =>
+                      setTemporarySettings((previous) => ({
+                        ...previous!,
+                        refreshInterval: value[0] * 1000
+                      }))
+                    }
+                    step={5}
+                    value={[
+                      temporarySettings?.refreshInterval
+                        ? temporarySettings?.refreshInterval / 1000
+                        : 5
+                    ]}
+                  />
+                  <div className="text-sm text-gray-500">
+                    {temporarySettings?.refreshInterval
+                      ? temporarySettings?.refreshInterval / 1000
+                      : 5}
+                    seconds
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Loader className="h-[289px] flex-center" />
+          )}
         </TabsContent>
 
         <TabsContent value="notifications">
@@ -138,48 +162,39 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <Label htmlFor="price-alerts">Price Alerts</Label>
                 <Switch
-                  checked={temporarySettings.notifications.priceAlerts}
+                  checked={temporarySettings?.priceAlerts}
                   id="price-alerts"
                   onCheckedChange={(checked) =>
-                    setTemporarySettings({
-                      ...temporarySettings,
-                      notifications: {
-                        ...temporarySettings.notifications,
-                        priceAlerts: checked
-                      }
-                    })
+                    setTemporarySettings((previous) => ({
+                      ...previous!,
+                      priceAlerts: checked
+                    }))
                   }
                 />
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="news-updates">News Updates</Label>
                 <Switch
-                  checked={temporarySettings.notifications.newsUpdates}
+                  checked={temporarySettings?.newsUpdates}
                   id="news-updates"
                   onCheckedChange={(checked) =>
-                    setTemporarySettings({
-                      ...temporarySettings,
-                      notifications: {
-                        ...temporarySettings.notifications,
-                        newsUpdates: checked
-                      }
-                    })
+                    setTemporarySettings((previous) => ({
+                      ...previous!,
+                      newsUpdates: checked
+                    }))
                   }
                 />
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="portfolio-summary">Portfolio Summary</Label>
                 <Switch
-                  checked={temporarySettings.notifications.portfolioSummary}
+                  checked={temporarySettings?.portfolioSummary}
                   id="portfolio-summary"
                   onCheckedChange={(checked) =>
-                    setTemporarySettings({
-                      ...temporarySettings,
-                      notifications: {
-                        ...temporarySettings.notifications,
-                        portfolioSummary: checked
-                      }
-                    })
+                    setTemporarySettings((previous) => ({
+                      ...previous!,
+                      portfolioSummary: checked
+                    }))
                   }
                 />
               </div>
@@ -200,12 +215,12 @@ export default function SettingsPage() {
                   className="flex space-x-4"
                   id="display-mode"
                   onValueChange={(value) =>
-                    setTemporarySettings({
-                      ...temporarySettings,
+                    setTemporarySettings((previous) => ({
+                      ...previous!,
                       displayMode: value as 'compact' | 'comfortable'
-                    })
+                    }))
                   }
-                  value={temporarySettings.displayMode}
+                  value={temporarySettings?.displayMode}
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem id="compact" value="compact" />
@@ -223,12 +238,12 @@ export default function SettingsPage() {
                   className="flex space-x-4"
                   id="default-view"
                   onValueChange={(value) =>
-                    setTemporarySettings({
-                      ...temporarySettings,
+                    setTemporarySettings((previous) => ({
+                      ...previous!,
                       defaultView: value as 'list' | 'grid'
-                    })
+                    }))
                   }
-                  value={temporarySettings.defaultView}
+                  value={temporarySettings?.defaultView}
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem id="list" value="list" />

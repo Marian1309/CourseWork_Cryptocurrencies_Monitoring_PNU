@@ -1,5 +1,7 @@
 import type { FC, ReactNode } from 'react';
 
+import { SettingsProvider } from '@/context/settings';
+
 import { TanstackQueryProvider } from '@/components/providers';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -11,8 +13,10 @@ type Properties = {
 const Providers: FC<Properties> = ({ children, className }) => {
   return (
     <main className={className}>
-      <TanstackQueryProvider>{children}</TanstackQueryProvider>
-      <Toaster />
+      <SettingsProvider>
+        <TanstackQueryProvider>{children}</TanstackQueryProvider>
+        <Toaster />
+      </SettingsProvider>
     </main>
   );
 };

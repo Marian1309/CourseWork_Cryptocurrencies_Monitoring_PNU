@@ -20,6 +20,8 @@ const Navbar: FC<Properties> = ({ isSignedIn }) => {
   const pathname = usePathname();
   const router = useRouter();
 
+  useEffect(() => {}, []);
+
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [scrolled, setScrolled] = useState<boolean>(false);
 

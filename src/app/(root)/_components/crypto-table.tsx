@@ -1,7 +1,7 @@
 'use client';
 
 import type { FC } from 'react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import Image from 'next/image';
 
@@ -10,6 +10,9 @@ import type { CryptoData, SortConfig } from '@/types/globals';
 import { cn } from '@/lib/utils';
 
 import useCrypto from '@/hooks/use-crypto';
+import { toast } from '@/hooks/use-toast';
+
+import { useSettings } from '@/context/settings';
 
 import Loader from '@/components/ui/loader';
 
@@ -31,7 +34,23 @@ const CryptoTable: FC<Properties> = ({ searchPage }) => {
     direction: 'desc'
   });
 
-  const { data, isLoading, error } = useCrypto(searchPage, sortConfig);
+  const { settings } = useSettings();
+
+  const { data, isLoading, error, isRefetching } = useCrypto(
+    searchPage,
+    sortConfig,
+    settings?.refreshInterval || 60_000
+  );
+
+  useEffect(() => {
+    if (isRefetching) {
+      toast({
+        title: 'Data updated',
+        description: 'The data has been updated.',
+        duration: 3000
+      });
+    }
+  }, [isRefetching]);
 
   const handleSort = useCallback((key: string) => {
     setSortConfig((previous) => ({
