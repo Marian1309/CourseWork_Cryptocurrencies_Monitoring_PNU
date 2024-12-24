@@ -6,6 +6,8 @@ import { nanoid } from 'nanoid';
 
 import database from '@/db';
 
+export const runtime = 'experimental-edge';
+
 export const GET = async () => {
   const { userId } = await auth();
 
