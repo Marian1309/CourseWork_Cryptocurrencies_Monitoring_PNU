@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 
 import { Grid, List } from 'lucide-react';
+import { useQueryState } from 'nuqs';
 
 import type { CryptoData, SortConfig } from '@/types/globals';
 
@@ -17,30 +18,51 @@ import { useSettings } from '@/context/settings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Loader from '@/components/ui/loader';
 
+import checkUser from '@/actions/check-user';
+import getUserBalance from '@/actions/get-balance';
 import { TABLE_HEADERS } from '@/constants';
 
+import BuyCoinDialog from './buy-coin-dialog';
 import CryptoDetails from './crypto-details';
 import TablePagination from './table-pagination';
 import TableSearchInput from './table-search-input';
 
-type Properties = {
-  searchPage: number;
-};
+const CryptoTable: FC = () => {
+  const [searchPage, setSearchPage] = useQueryState('search_page', { defaultValue: '1' });
 
-const CryptoTable: FC<Properties> = ({ searchPage }) => {
   const [selectedCrypto, setSelectedCrypto] = useState<CryptoData | undefined>();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: 'market_cap',
     direction: 'desc'
   });
+  const [balance, setBalance] = useState(0);
   const { settings, updateSettings } = useSettings();
   const [view, setView] = useState(settings?.defaultView || 'list');
-  const { data, isLoading, error, isRefetching } = useCrypto(
+  const { data, isLoading, error, isRefetching, refetch } = useCrypto(
     searchPage,
     sortConfig,
     settings?.refreshInterval || 60_000
   );
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      const balance = await getUserBalance();
+      if (typeof balance === 'number') {
+        setBalance(balance);
+      }
+    };
+
+    fetchBalance();
+  }, []);
+
+  useEffect(() => {
+    const isRegistered = localStorage.getItem('isRegistered');
+    if (!isRegistered) {
+      checkUser();
+      localStorage.setItem('isRegistered', 'true');
+    }
+  }, []);
 
   useEffect(() => {
     if (settings?.defaultView) {
@@ -53,10 +75,23 @@ const CryptoTable: FC<Properties> = ({ searchPage }) => {
       toast({
         title: 'Data updated',
         description: 'The data has been updated.',
-        duration: 3000
+        duration: 1500
       });
     }
   }, [isRefetching]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    refetch();
+  }, [refetch, searchPage]);
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth <= 800) {
+      setView('grid');
+    } else {
+      setView('list');
+    }
+  });
 
   const handleSort = useCallback((key: string) => {
     setSortConfig((previous) => ({
@@ -94,11 +129,11 @@ const CryptoTable: FC<Properties> = ({ searchPage }) => {
     setSelectedCrypto(crypto);
   }, []);
 
-  const toggleView = async () => {
+  const toggleView = useCallback(async () => {
     const newView = view === 'list' ? 'grid' : 'list';
     setView(newView);
     await updateSettings({ defaultView: newView });
-  };
+  }, [view, updateSettings]);
 
   if (isLoading)
     return (
@@ -215,12 +250,12 @@ const CryptoTable: FC<Properties> = ({ searchPage }) => {
               <Card
                 className="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
                 key={id}
-                onClick={() => handleCryptoClick(crypto)}
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
                     {name} ({symbol})
                   </CardTitle>
+
                   <Image
                     alt={name}
                     height={32}
@@ -228,19 +263,30 @@ const CryptoTable: FC<Properties> = ({ searchPage }) => {
                     width={32}
                   />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">${USD.price.toFixed(2)}</div>
-                  <p
-                    className={`text-xs ${USD.percent_change_24h > 0 ? 'text-green-600' : 'text-red-600'}`}
-                  >
-                    {USD.percent_change_24h.toFixed(2)}%
-                  </p>
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Rank: {cmc_rank}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Market Cap: ${USD.market_cap.toLocaleString()}
-                  </p>
+
+                <CardContent className="flex items-end justify-between">
+                  <div>
+                    <div className="text-2xl font-bold">${USD.price.toFixed(2)}</div>
+                    <p
+                      className={`text-xs ${USD.percent_change_24h > 0 ? 'text-green-600' : 'text-red-600'}`}
+                    >
+                      {USD.percent_change_24h.toFixed(2)}%
+                    </p>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Rank: {cmc_rank}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Market Cap: ${USD.market_cap.toLocaleString()}
+                    </p>
+                  </div>
+
+                  <BuyCoinDialog
+                    balance={balance}
+                    coinId={id.toString()}
+                    coinName={name}
+                    coinPrice={USD.price}
+                    coinSymbol={symbol}
+                  />
                 </CardContent>
               </Card>
             );
@@ -255,7 +301,10 @@ const CryptoTable: FC<Properties> = ({ searchPage }) => {
         />
       )}
 
-      <TablePagination searchPage={searchPage} />
+      <TablePagination
+        onPageChange={(page) => setSearchPage(page.toString())}
+        searchPage={searchPage}
+      />
     </>
   );
 };

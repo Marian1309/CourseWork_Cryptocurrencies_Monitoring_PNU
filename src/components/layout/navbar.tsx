@@ -20,8 +20,6 @@ const Navbar: FC<Properties> = ({ isSignedIn }) => {
   const pathname = usePathname();
   const router = useRouter();
 
-  useEffect(() => {}, []);
-
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [scrolled, setScrolled] = useState<boolean>(false);
 
@@ -35,12 +33,12 @@ const Navbar: FC<Properties> = ({ isSignedIn }) => {
   }, []);
 
   const handleHomeClick = () => {
-    router.push('/?searchPage=1');
+    router.push('/?search_page=1');
   };
 
   return (
     <nav
-      className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 shadow-md backdrop-blur-md dark:bg-gray-900' : 'bg-transparent'}`}
+      className={`fixed left-0 right-0 top-0 z-50 pt-1 transition-all duration-300 ${scrolled ? 'bg-white/80 shadow-md backdrop-blur-md dark:bg-gray-900' : 'bg-transparent'}`}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 justify-between">
@@ -60,8 +58,8 @@ const Navbar: FC<Properties> = ({ isSignedIn }) => {
                 <Link
                   className={`inline-flex items-center px-1 py-1 text-sm font-medium transition-all duration-300 ${
                     isActive
-                      ? 'border-b-2 border-blue-500 text-blue-600'
-                      : 'text-gray-500 hover:border-b-[2px] hover:border-gray-300 hover:pb-1 hover:text-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-100'
+                      ? 'border-b-[1px] border-blue-500 pb-1.5 pt-1 text-blue-600 hover:pb-1.5'
+                      : 'text-gray-500 hover:border-b-[1px] hover:border-gray-300 hover:pb-1.5 hover:text-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-100'
                   }`}
                   href={item.href}
                   key={item.name}

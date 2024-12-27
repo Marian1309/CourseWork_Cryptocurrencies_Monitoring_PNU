@@ -1,12 +1,10 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { auth } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { nanoid } from 'nanoid';
 
 import database from '@/db';
-
-export const runtime = 'experimental-edge';
 
 export const GET = async () => {
   const { userId } = await auth();
@@ -14,6 +12,9 @@ export const GET = async () => {
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  const client = await clerkClient();
+  const user = await client.users.getUser(userId);
 
   try {
     const settings = await database.settings.findUnique({
@@ -31,7 +32,9 @@ export const GET = async () => {
           priceAlerts: true,
           portfolioSummary: false,
           displayMode: 'comfortable',
-          defaultView: 'list'
+          defaultView: 'list',
+          fullName: user?.fullName ?? '',
+          email: user?.emailAddresses[0].emailAddress ?? ''
         }
       });
 
@@ -52,6 +55,8 @@ export const PUT = async (request: NextRequest) => {
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  const client = await clerkClient();
+  const user = await client.users.getUser(userId);
 
   const settings = await database.settings.upsert({
     where: { userId },
@@ -62,7 +67,9 @@ export const PUT = async (request: NextRequest) => {
       priceAlerts: body.priceAlerts,
       portfolioSummary: body.portfolioSummary,
       displayMode: body.displayMode,
-      defaultView: body.defaultView
+      defaultView: body.defaultView,
+      fullName: body.fullName ?? user?.fullName ?? '',
+      email: user?.emailAddresses[0].emailAddress ?? ''
     },
     create: {
       id: nanoid(),
@@ -73,7 +80,9 @@ export const PUT = async (request: NextRequest) => {
       priceAlerts: body.priceAlerts ?? true,
       portfolioSummary: body.portfolioSummary ?? false,
       displayMode: body.displayMode ?? 'comfortable',
-      defaultView: body.defaultView ?? 'list'
+      defaultView: body.defaultView ?? 'list',
+      fullName: user?.fullName ?? '',
+      email: user?.emailAddresses[0].emailAddress ?? ''
     }
   });
 

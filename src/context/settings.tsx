@@ -18,13 +18,15 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 const defaultSettings: Settings = {
   id: '',
   userId: '',
-  theme: 'system',
+  theme: 'light',
   currency: 'USD',
   refreshInterval: 60_000,
   priceAlerts: true,
   portfolioSummary: false,
   displayMode: 'comfortable',
-  defaultView: 'list'
+  defaultView: 'list',
+  fullName: '',
+  email: ''
 };
 
 type Properties = {
@@ -84,9 +86,9 @@ const SettingsProvider: FC<Properties> = ({ children }) => {
     }
   };
 
-  const changeTheme = (theme: 'light' | 'dark' | 'system') => {
+  const changeTheme = async (theme: 'light' | 'dark' | 'system') => {
     setTheme(theme);
-    updateSettings({ theme });
+    await updateSettings({ theme });
   };
 
   return (

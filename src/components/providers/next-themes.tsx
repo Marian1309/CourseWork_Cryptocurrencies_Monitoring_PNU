@@ -9,7 +9,7 @@ import {
 
 import { useSettings } from '@/context/settings';
 
-export function ThemeProvider({ children, ...properties }: ThemeProviderProps) {
+function ThemeProvider({ children, ...properties }: ThemeProviderProps) {
   const { settings } = useSettings();
   const [mounted, setMounted] = useState(false);
 
@@ -18,7 +18,7 @@ export function ThemeProvider({ children, ...properties }: ThemeProviderProps) {
   }, []);
 
   if (!mounted) {
-    return <>{children}</>;
+    return;
   }
 
   return (
@@ -33,3 +33,5 @@ export function ThemeProvider({ children, ...properties }: ThemeProviderProps) {
     </NextThemesProvider>
   );
 }
+
+export default ThemeProvider;

@@ -1,13 +1,15 @@
 'use client';
 
 import type { FC } from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
+
+import { useUser } from '@clerk/nextjs';
+import type { Settings } from '@prisma/client';
 
 import { toast } from '@/hooks/use-toast';
 
 import { useSettings } from '@/context/settings';
 
-import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -32,24 +34,28 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import Saving from './_components/saving';
 
-export const runtime = 'experimental-edge';
-
 const SettingsPage: FC = () => {
   const { settings, updateSettings } = useSettings();
-  const [temporarySettings, setTemporarySettings] = useState(settings);
+  const [temporarySettings, setTemporarySettings] = useState<Settings | undefined>();
+
+  const [userFullName, setUserFullName] = useState<string | undefined>();
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    if (settings) {
+    if (settings && !temporarySettings) {
       setTemporarySettings(settings);
     }
-  }, [settings]);
+  }, [settings, temporarySettings]);
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (temporarySettings) {
-      await updateSettings(temporarySettings);
-      toast({
-        title: 'Settings saved',
-        description: 'Your preferences have been updated.'
+      startTransition(async () => {
+        await updateSettings({ ...temporarySettings, fullName: userFullName });
+        toast({
+          title: 'Settings saved',
+          description: 'Your preferences have been updated.',
+          duration: 1500
+        });
       });
     }
   };
@@ -58,8 +64,10 @@ const SettingsPage: FC = () => {
     setTemporarySettings({ ...temporarySettings, theme } as any);
   };
 
+  const { user } = useUser();
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto py-8">
       <h1 className="mb-6 text-3xl font-bold">Settings</h1>
 
       <Tabs className="space-y-4" defaultValue="general">
@@ -277,25 +285,37 @@ const SettingsPage: FC = () => {
 
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="full-name">Full Name</Label>
                 <Input
                   className="w-full rounded border p-2"
-                  id="email"
-                  placeholder="your@email.com"
-                  type="email"
+                  id="full-name"
+                  onChange={(event) => setUserFullName(event.target.value)}
+                  placeholder="John Doe"
+                  type="text"
+                  value={userFullName ?? settings?.fullName ?? ''}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
                   className="w-full rounded border p-2"
-                  id="password"
-                  placeholder="••••••••"
-                  type="password"
+                  disabled={
+                    user?.emailAddresses[0].emailAddress ===
+                    user?.primaryEmailAddress?.emailAddress
+                  }
+                  id="email"
+                  onChange={(event) =>
+                    setTemporarySettings((previous) => ({
+                      ...previous!,
+                      email: event.target.value
+                    }))
+                  }
+                  placeholder="your@email.com"
+                  type="email"
+                  value={settings?.email ?? user?.emailAddresses[0].emailAddress ?? ''}
                 />
               </div>
-              <Button variant="outline">Change Password</Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -303,6 +323,7 @@ const SettingsPage: FC = () => {
 
       <Saving
         handleSave={handleSave}
+        isLoading={isPending}
         setTemporarySettings={setTemporarySettings}
         settings={settings!}
       />

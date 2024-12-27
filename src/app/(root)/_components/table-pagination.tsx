@@ -1,5 +1,8 @@
+'use client';
+
 import type { FC } from 'react';
-import { useState } from 'react';
+
+import { useRouter } from 'next/navigation';
 
 import {
   Pagination,
@@ -10,25 +13,31 @@ import {
 } from '@/components/ui/pagination';
 
 type Properties = {
-  searchPage: number;
+  searchPage: string;
+  onPageChange: (page: number) => void;
 };
 
-const TablePagination: FC<Properties> = ({ searchPage }) => {
-  const [currentPage, setCurrentPage] = useState(searchPage);
-  const totalPages = 350;
+const TablePagination: FC<Properties> = ({ searchPage, onPageChange }) => {
+  const router = useRouter();
+  const totalPages = 349;
+
+  if (+searchPage > totalPages) {
+    router.push(`/?search_page=${totalPages}`, { scroll: false });
+  }
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    router.push(`/?search_page=${page}`, { scroll: false });
+    onPageChange(page);
   };
 
   const renderPaginationItems = () => {
     const items = [];
 
     items.push(
-      <PaginationItem className="dark:text-gray-400" key={1}>
+      <PaginationItem className="dark:text-white" key={1}>
         <PaginationLink
-          href={`/?searchPage=1`}
-          isActive={currentPage === 1}
+          className="cursor-pointer dark:text-white"
+          isActive={+searchPage === 1}
           onClick={() => handlePageChange(1)}
         >
           1
@@ -36,24 +45,24 @@ const TablePagination: FC<Properties> = ({ searchPage }) => {
       </PaginationItem>
     );
 
-    if (currentPage > 3) {
+    if (+searchPage > 3) {
       items.push(
-        <PaginationItem className="dark:text-gray-400" key="ellipsis1">
+        <PaginationItem className="dark:text-white" key="ellipsis1">
           <PaginationEllipsis />
         </PaginationItem>
       );
     }
 
     for (
-      let index = Math.max(2, currentPage - 1);
-      index <= Math.min(totalPages - 1, currentPage + 1);
+      let index = Math.max(2, +searchPage - 1);
+      index <= Math.min(totalPages - 1, +searchPage + 1);
       index++
     ) {
       items.push(
-        <PaginationItem className="dark:text-gray-400" key={index}>
+        <PaginationItem key={index}>
           <PaginationLink
-            href={`/?searchPage=${index}`}
-            isActive={currentPage === index}
+            className="cursor-pointer dark:text-white"
+            isActive={+searchPage === index}
             onClick={() => handlePageChange(index)}
           >
             {index}
@@ -62,19 +71,19 @@ const TablePagination: FC<Properties> = ({ searchPage }) => {
       );
     }
 
-    if (currentPage < totalPages - 2) {
+    if (+searchPage < totalPages - 2) {
       items.push(
-        <PaginationItem className="dark:text-gray-400" key="ellipsis2">
+        <PaginationItem className="dark:text-white" key="ellipsis2">
           <PaginationEllipsis />
         </PaginationItem>
       );
     }
 
     items.push(
-      <PaginationItem className="dark:text-gray-400" key={totalPages}>
+      <PaginationItem className="dark:text-white" key={totalPages}>
         <PaginationLink
-          href={`/?searchPage=${totalPages}`}
-          isActive={currentPage === totalPages}
+          className="cursor-pointer dark:text-white"
+          isActive={+searchPage === totalPages}
           onClick={() => handlePageChange(totalPages)}
         >
           {totalPages}
@@ -86,8 +95,8 @@ const TablePagination: FC<Properties> = ({ searchPage }) => {
   };
 
   return (
-    <Pagination className="pt-4 dark:text-gray-400">
-      <PaginationContent className="dark:text-gray-400">
+    <Pagination className="pt-4 dark:text-white">
+      <PaginationContent className="dark:text-white">
         {renderPaginationItems()}
       </PaginationContent>
     </Pagination>

@@ -71,7 +71,7 @@
   "editor.renderWhitespace": "none",
   "git.autofetch": true,
   "git.enableSmartCommit": true,
-  "workbench.colorTheme": "Red One Dark Pro | Mirage Bordered",
+  "workbench.colorTheme": "Material Theme Ocean High Contrast",
   "editor.accessibilityPageSize": 300,
   "editor.bracketPairColorization.enabled": true,
   "explorer.expandSingleFolderWorkspaces": false,
