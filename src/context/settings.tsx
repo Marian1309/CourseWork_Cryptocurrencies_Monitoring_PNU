@@ -1,10 +1,12 @@
 'use client';
 
 import type { FC, ReactNode } from 'react';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-import type { Settings } from '@prisma/client';
+import { DefaultView, DisplayMode, type Settings } from '@prisma/client';
 import { useTheme } from 'next-themes';
+
+import prettyPrint from '@/lib/pretty-print';
 
 type SettingsContextType = {
   settings: Settings | null;
@@ -18,13 +20,15 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 const defaultSettings: Settings = {
   id: '',
   userId: '',
-  theme: 'system',
+  theme: 'light',
   currency: 'USD',
   refreshInterval: 60_000,
   priceAlerts: true,
   portfolioSummary: false,
-  displayMode: 'comfortable',
-  defaultView: 'list'
+  displayMode: DisplayMode.COMFORTABLE,
+  defaultView: DefaultView.LIST,
+  fullName: '',
+  email: ''
 };
 
 type Properties = {
@@ -32,8 +36,8 @@ type Properties = {
 };
 
 const SettingsProvider: FC<Properties> = ({ children }) => {
-  const [settings, setSettings] = useState<Settings | undefined>();
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [settings, setSettings] = useState<Settings | undefined>(defaultSettings);
+  const [isLoading, setIsLoading] = useState(true);
 
   const { setTheme } = useTheme();
 
@@ -47,12 +51,12 @@ const SettingsProvider: FC<Properties> = ({ children }) => {
           setTheme(data.theme);
           setSettings(data);
         } else {
-          console.error('Failed to fetch settings');
+          prettyPrint.error('Failed to fetch settings');
           setTheme(defaultSettings.theme);
           setSettings(defaultSettings);
         }
       } catch (error) {
-        console.error('Error fetching settings:', error);
+        prettyPrint.error(`Error fetching settings: ${error}`);
         setTheme(defaultSettings.theme);
         setSettings(defaultSettings);
       } finally {
@@ -63,44 +67,43 @@ const SettingsProvider: FC<Properties> = ({ children }) => {
     fetchSettings();
   }, [setTheme]);
 
-  const updateSettings = async (newSettings: Partial<Settings>) => {
-    try {
-      const response = await fetch('/api/settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newSettings)
-      });
-      if (response.ok) {
-        const updatedSettings = await response.json();
-        setSettings(updatedSettings);
-        if (newSettings.theme) {
-          setTheme(newSettings.theme);
+  const updateSettings = useCallback(
+    async (newSettings: Partial<Settings>) => {
+      try {
+        const response = await fetch('/api/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newSettings)
+        });
+        if (response.ok) {
+          const updatedSettings = await response.json();
+          setSettings(updatedSettings);
+          if (newSettings.theme) {
+            setTheme(newSettings.theme);
+          }
+        } else {
+          prettyPrint.error('Failed to update settings');
         }
-      } else {
-        console.error('Failed to update settings');
+      } catch (error) {
+        prettyPrint.error(`Error updating settings: ${error}`);
       }
-    } catch (error) {
-      console.error('Error updating settings:', error);
-    }
-  };
-
-  const changeTheme = (theme: 'light' | 'dark' | 'system') => {
-    setTheme(theme);
-    updateSettings({ theme });
-  };
-
-  return (
-    <SettingsContext.Provider
-      value={{
-        settings: settings || defaultSettings,
-        updateSettings,
-        isLoading,
-        changeTheme
-      }}
-    >
-      {children}
-    </SettingsContext.Provider>
+    },
+    [setTheme]
   );
+
+  const changeTheme = async (theme: 'light' | 'dark' | 'system') => {
+    setTheme(theme);
+    await updateSettings({ theme });
+  };
+
+  const value = {
+    settings: settings || defaultSettings,
+    updateSettings,
+    isLoading,
+    changeTheme
+  };
+
+  return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 };
 
 export const useSettings = () => {

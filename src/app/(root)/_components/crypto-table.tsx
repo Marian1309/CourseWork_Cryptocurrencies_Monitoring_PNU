@@ -3,44 +3,87 @@
 import type { FC } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 
+import type { DefaultView } from '@prisma/client';
 import { Grid, List } from 'lucide-react';
+import { useQueryState } from 'nuqs';
 
 import type { CryptoData, SortConfig } from '@/types/globals';
 
 import useCrypto from '@/hooks/use-crypto';
-import { toast } from '@/hooks/use-toast';
 
 import { useSettings } from '@/context/settings';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Loader from '@/components/ui/loader';
 
-import { TABLE_HEADERS } from '@/constants';
+import checkUser from '@/actions/check-user';
+import getUserBalance from '@/actions/get-balance';
+import { CRYPTO_LIMIT_PER_PAGE, TABLE_HEADERS } from '@/constants';
 
-import CryptoDetails from './crypto-details';
 import TablePagination from './table-pagination';
 import TableSearchInput from './table-search-input';
 
-type Properties = {
-  searchPage: number;
-};
+const BuyCoinDialog = dynamic(() => import('./buy-coin-dialog'), {
+  ssr: false,
+  loading: () => <Loader />
+});
 
-const CryptoTable: FC<Properties> = ({ searchPage }) => {
-  const [selectedCrypto, setSelectedCrypto] = useState<CryptoData | undefined>();
-  const [searchTerm, setSearchTerm] = useState('');
+const CryptoTable: FC = () => {
+  const [searchPage, setSearchPage] = useQueryState('search_page', {
+    defaultValue: '1',
+    clearOnDefault: true
+  });
+  const [searchTerm, setSearchTerm] = useQueryState('search_term', {
+    defaultValue: '',
+    clearOnDefault: true
+  });
+
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: 'market_cap',
     direction: 'desc'
   });
+  const [balance, setBalance] = useState(0);
   const { settings, updateSettings } = useSettings();
-  const [view, setView] = useState(settings?.defaultView || 'list');
-  const { data, isLoading, error, isRefetching } = useCrypto(
-    searchPage,
-    sortConfig,
+  const [view, setView] = useState<DefaultView>(settings?.defaultView || 'LIST');
+
+  const {
+    data: response,
+    isLoading,
+    error,
+    isRefetching,
+    refetch
+  } = useCrypto(
+    {
+      params: {
+        page: searchPage,
+        limit: CRYPTO_LIMIT_PER_PAGE,
+        searchTerm: searchTerm || undefined
+      }
+    },
     settings?.refreshInterval || 60_000
   );
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      const balance = await getUserBalance();
+      if (typeof balance === 'number') {
+        setBalance(balance);
+      }
+    };
+
+    fetchBalance();
+  }, []);
+
+  useEffect(() => {
+    const isRegistered = localStorage.getItem('isRegistered');
+    if (!isRegistered) {
+      checkUser();
+      localStorage.setItem('isRegistered', 'true');
+    }
+  }, []);
 
   useEffect(() => {
     if (settings?.defaultView) {
@@ -49,14 +92,9 @@ const CryptoTable: FC<Properties> = ({ searchPage }) => {
   }, [settings?.defaultView]);
 
   useEffect(() => {
-    if (isRefetching) {
-      toast({
-        title: 'Data updated',
-        description: 'The data has been updated.',
-        duration: 3000
-      });
-    }
-  }, [isRefetching]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    refetch();
+  }, [refetch, searchPage, searchTerm]);
 
   const handleSort = useCallback((key: string) => {
     setSortConfig((previous) => ({
@@ -65,49 +103,40 @@ const CryptoTable: FC<Properties> = ({ searchPage }) => {
     }));
   }, []);
 
-  const sortedAndFilteredCryptoData = useMemo(() => {
-    if (!data) return [];
+  const sortedCryptoData = useMemo(() => {
+    if (!response?.data) return [];
 
-    const searchTermLower = searchTerm.toLowerCase();
-    const filteredData = data.filter(
-      ({ name, symbol }: CryptoData) =>
-        name.toLowerCase().includes(searchTermLower) ||
-        symbol.toLowerCase().includes(searchTermLower)
-    );
-
-    return filteredData.sort((a: CryptoData, b: CryptoData) => {
-      if (sortConfig.key === 'name' || sortConfig.key === 'symbol') {
-        return sortConfig.direction === 'asc'
-          ? a[sortConfig.key].localeCompare(b[sortConfig.key])
-          : b[sortConfig.key].localeCompare(a[sortConfig.key]);
+    const compareValues = (a: CryptoData, b: CryptoData) => {
+      const { key, direction } = sortConfig;
+      if (key === 'name' || key === 'symbol') {
+        return direction === 'asc'
+          ? a[key].localeCompare(b[key])
+          : b[key].localeCompare(a[key]);
       } else {
-        const aValue = a.quote.USD[sortConfig.key as keyof typeof a.quote.USD];
-        const bValue = b.quote.USD[sortConfig.key as keyof typeof b.quote.USD];
-        return sortConfig.direction === 'asc'
-          ? (aValue as number) - (bValue as number)
-          : (bValue as number) - (aValue as number);
+        const aValue = Number.parseFloat(a[key as keyof CryptoData] as string);
+        const bValue = Number.parseFloat(b[key as keyof CryptoData] as string);
+        return direction === 'asc' ? aValue - bValue : bValue - aValue;
       }
-    });
-  }, [data, searchTerm, sortConfig]);
+    };
 
-  const handleCryptoClick = useCallback((crypto: CryptoData) => {
-    setSelectedCrypto(crypto);
-  }, []);
+    return [...(response?.data || [])].sort(compareValues);
+  }, [response, sortConfig]);
 
-  const toggleView = async () => {
-    const newView = view === 'list' ? 'grid' : 'list';
+  const toggleView = useCallback(async () => {
+    const newView = view === 'LIST' ? 'GRID' : 'LIST';
     setView(newView);
     await updateSettings({ defaultView: newView });
-  };
+  }, [view, updateSettings]);
 
-  if (isLoading)
+  if (isLoading || isRefetching) {
     return (
-      <div className="relative flex-1 flex-center">
+      <div className="relative mt-4 flex-1 flex-center">
         <Loader />
       </div>
     );
+  }
 
-  if (error)
+  if (error) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center text-red-500 dark:text-red-400">
@@ -116,10 +145,11 @@ const CryptoTable: FC<Properties> = ({ searchPage }) => {
         </div>
       </div>
     );
+  }
 
   return (
     <>
-      <div className="flex items-center justify-between pb-4">
+      <div className="mt-4 flex items-center justify-between pb-4">
         <TableSearchInput
           className="flex-1"
           placeholder="Search by name or symbol..."
@@ -128,11 +158,11 @@ const CryptoTable: FC<Properties> = ({ searchPage }) => {
         />
 
         <div className="cursor-pointer p-2" onClick={toggleView}>
-          {view === 'list' ? <Grid className="h-6 w-6" /> : <List className="h-6 w-6" />}
+          {view === 'LIST' ? <Grid className="h-6 w-6" /> : <List className="h-6 w-6" />}
         </div>
       </div>
 
-      {view === 'list' ? (
+      {view === 'LIST' ? (
         <div className="overflow-x-auto rounded-lg shadow">
           <table className="min-w-full bg-white dark:bg-gray-800">
             <thead className="bg-gray-100 dark:bg-gray-700">
@@ -155,21 +185,16 @@ const CryptoTable: FC<Properties> = ({ searchPage }) => {
             </thead>
 
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {sortedAndFilteredCryptoData.map((crypto: CryptoData) => {
-                const {
-                  name,
-                  symbol,
-                  quote: { USD },
-                  cmc_rank
-                } = crypto;
+              {sortedCryptoData.map((crypto: CryptoData) => {
+                const { name, symbol, price, rank, percent_change_24h, market_cap } =
+                  crypto;
 
                 return (
                   <tr
                     className="cursor-pointer transition-colors hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800"
                     key={crypto.id}
-                    onClick={() => handleCryptoClick(crypto)}
                   >
-                    <td className="whitespace-nowrap px-6 py-4">{cmc_rank}</td>
+                    <td className="whitespace-nowrap px-6 py-4">{rank}</td>
                     <td className="flex items-center whitespace-nowrap px-6 py-4">
                       <Image
                         alt={name}
@@ -180,21 +205,17 @@ const CryptoTable: FC<Properties> = ({ searchPage }) => {
                       <span className="pl-2">{name}</span>
                     </td>
                     <td className="whitespace-nowrap px-6 py-4">{symbol}</td>
-                    <td className="whitespace-nowrap px-6 py-4">
-                      ${USD.price.toFixed(2)}
-                    </td>
+                    <td className="whitespace-nowrap px-6 py-4">{price}</td>
                     <td className="whitespace-nowrap px-6 py-4">
                       <span
                         className={`${
-                          USD.percent_change_24h > 0 ? 'text-green-600' : 'text-red-600'
+                          percent_change_24h > 0 ? 'text-green-600' : 'text-red-600'
                         }`}
                       >
-                        {USD.percent_change_24h.toFixed(2)}%
+                        {percent_change_24h}%
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4">
-                      ${USD.market_cap.toLocaleString()}
-                    </td>
+                    <td className="whitespace-nowrap px-6 py-4">{market_cap}</td>
                   </tr>
                 );
               })}
@@ -203,44 +224,52 @@ const CryptoTable: FC<Properties> = ({ searchPage }) => {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {sortedAndFilteredCryptoData.map((crypto: CryptoData) => {
-            const {
-              id,
-              name,
-              symbol,
-              quote: { USD },
-              cmc_rank
-            } = crypto;
+          {sortedCryptoData.map((crypto: CryptoData) => {
+            const { name, symbol, rank, percent_change_24h, market_cap, price } = crypto;
+
             return (
               <Card
                 className="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
-                key={id}
-                onClick={() => handleCryptoClick(crypto)}
+                key={crypto.id}
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
                     {name} ({symbol})
                   </CardTitle>
+
                   <Image
                     alt={name}
                     height={32}
-                    src={`https://s2.coinmarketcap.com/static/img/coins/32x32/${id}.png`}
+                    src={`https://s2.coinmarketcap.com/static/img/coins/32x32/${crypto.id}.png`}
                     width={32}
                   />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">${USD.price.toFixed(2)}</div>
-                  <p
-                    className={`text-xs ${USD.percent_change_24h > 0 ? 'text-green-600' : 'text-red-600'}`}
-                  >
-                    {USD.percent_change_24h.toFixed(2)}%
-                  </p>
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Rank: {cmc_rank}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Market Cap: ${USD.market_cap.toLocaleString()}
-                  </p>
+
+                <CardContent className="flex items-end justify-between">
+                  <div>
+                    <div className="text-2xl font-bold">{price}</div>
+                    <p
+                      className={`pt-2 text-xs ${
+                        percent_change_24h > 0 ? 'text-green-600' : 'text-red-600'
+                      }`}
+                    >
+                      {percent_change_24h}%
+                    </p>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Rank: {rank}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Market Cap: {market_cap}
+                    </p>
+                  </div>
+
+                  <BuyCoinDialog
+                    balance={balance}
+                    coinId={crypto.id.toString()}
+                    coinName={name}
+                    coinPrice={price}
+                    coinSymbol={symbol}
+                  />
                 </CardContent>
               </Card>
             );
@@ -248,14 +277,11 @@ const CryptoTable: FC<Properties> = ({ searchPage }) => {
         </div>
       )}
 
-      {selectedCrypto && (
-        <CryptoDetails
-          crypto={selectedCrypto}
-          onClose={() => setSelectedCrypto(undefined)}
-        />
-      )}
-
-      <TablePagination searchPage={searchPage} />
+      <TablePagination
+        onPageChange={(page) => setSearchPage(page.toString())}
+        searchPage={searchPage}
+        totalItems={response?.pagination?.totalPages || 0}
+      />
     </>
   );
 };

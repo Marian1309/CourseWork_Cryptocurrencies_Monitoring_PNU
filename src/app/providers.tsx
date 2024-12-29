@@ -1,9 +1,12 @@
+'use client';
+
 import type { FC, ReactNode } from 'react';
+
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 import SettingsProvider from '@/context/settings';
 
-import { TanstackQueryProvider } from '@/components/providers';
-import { ThemeProvider } from '@/components/providers/next-themes';
+import { TanstackQueryProvider, ThemeProvider } from '@/components/providers';
 import { Toaster } from '@/components/ui/toaster';
 
 type Properties = {
@@ -14,12 +17,14 @@ type Properties = {
 const Providers: FC<Properties> = ({ children, className }) => {
   return (
     <main className={className}>
-      <SettingsProvider>
-        <ThemeProvider>
-          <TanstackQueryProvider>{children}</TanstackQueryProvider>
-          <Toaster />
-        </ThemeProvider>
-      </SettingsProvider>
+      <NuqsAdapter>
+        <SettingsProvider>
+          <ThemeProvider>
+            <TanstackQueryProvider>{children}</TanstackQueryProvider>
+            <Toaster />
+          </ThemeProvider>
+        </SettingsProvider>
+      </NuqsAdapter>
     </main>
   );
 };

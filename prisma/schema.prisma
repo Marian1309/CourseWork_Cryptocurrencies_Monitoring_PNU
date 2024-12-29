@@ -7,14 +7,53 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum DisplayMode {
+  COMFORTABLE
+  COMPACT
+}
+
+enum DefaultView {
+  LIST
+  GRID
+}
+
+model User {
+  id       String  @id
+  fullName String?
+  email    String?
+
+  balance Float @default(10000)
+
+  coins      Coin[]
+  settingsId String?
+  settings   Settings? @relation(fields: [settingsId], references: [id])
+}
+
 model Settings {
-  id               String  @id
-  userId           String  @unique
-  theme            String  @default("system")
-  currency         String  @default("USD")
-  refreshInterval  Int     @default(60000)
-  priceAlerts      Boolean @default(true)
-  portfolioSummary Boolean @default(false)
-  displayMode      String  @default("comfortable")
-  defaultView      String  @default("list")
+  id               String      @id
+  userId           String      @unique
+  theme            String      @default("system")
+  currency         String      @default("USD")
+  refreshInterval  Int         @default(60000)
+  priceAlerts      Boolean     @default(true)
+  portfolioSummary Boolean     @default(false)
+  displayMode      DisplayMode @default(COMFORTABLE)
+  defaultView      DefaultView @default(LIST)
+  fullName         String?
+  email            String?
+
+  user User[]
+}
+
+model Coin {
+  id          String   @id @default(cuid())
+  name        String
+  symbol      String
+  boughtPrice Float
+  boughtAt    DateTime
+  amount      Float
+  coinId      Int
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
 }

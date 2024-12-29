@@ -34,15 +34,14 @@
   "terminal.integrated.fontSize": 12,
   "terminal.integrated.enableMultiLinePasteWarning": "never",
   "files.autoSave": "onFocusChange",
-  "editor.fontFamily": "JetBrains Mono Thin, JetBrains Mono, Fira Code, Consolas, monospace",
+  "editor.fontFamily": "JetBrains Mono, Fira Code, Consolas, monospace",
   "editor.fontWeight": "100",
   "editor.formatOnSave": true,
   "files.exclude": {
     "**/.next": true,
     "**/node_modules": true,
     "**/next-env.d.ts": true,
-    "**/LICENSE": true,
-    "**/bun.lockb": true
+    "**/LICENSE": true
   },
   "files.associations": {
     "*.scss": "tailwindcss"
@@ -71,7 +70,7 @@
   "editor.renderWhitespace": "none",
   "git.autofetch": true,
   "git.enableSmartCommit": true,
-  "workbench.colorTheme": "Red One Dark Pro | Mirage Bordered",
+  "workbench.colorTheme": "Min Dark",
   "editor.accessibilityPageSize": 300,
   "editor.bracketPairColorization.enabled": true,
   "explorer.expandSingleFolderWorkspaces": false,

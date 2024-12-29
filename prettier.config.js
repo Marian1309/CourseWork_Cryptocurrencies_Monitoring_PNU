@@ -25,11 +25,11 @@ const prettierConfig = {
     '^@/db',
     '^@actions/(.*)$',
 
-    '^@/constants/(.*)$',
+    '^@/constants$',
     '^@/lib/(.*)$',
     '^@/hooks/(.*)$',
     '^@/context/(.*)$',
-    '^@/schema/(.*)$',
+    '^@/schemas/(.*)$',
     '^@/services/(.*)$',
 
     '^@/components/(.*)$',

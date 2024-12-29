@@ -1,4 +1,4 @@
-import { Home, Settings } from 'lucide-react';
+import { Home, PieChart, Settings } from 'lucide-react';
 
 export const TABLE_HEADERS = [
   { label: 'Rank', key: 'rank' },
@@ -9,11 +9,10 @@ export const TABLE_HEADERS = [
   { label: 'Market Cap', key: 'market_cap' }
 ] as const;
 
-export const CRYPTO_LIMIT = 30;
+export const CRYPTO_LIMIT_PER_PAGE = 30;
 
 export const NAV_ITEMS = [
   { name: 'Dashboard', href: '/', icon: Home },
-  // { name: 'Portfolio', href: '/portfolio', icon: PieChart },
-  // { name: 'News', href: '/news', icon: Newspaper },
+  { name: 'Portfolio', href: '/portfolio', icon: PieChart },
   { name: 'Settings', href: '/settings', icon: Settings }
 ];

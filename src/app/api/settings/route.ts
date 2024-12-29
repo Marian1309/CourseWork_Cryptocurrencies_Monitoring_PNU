@@ -2,11 +2,12 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@clerk/nextjs/server';
+import { DefaultView, DisplayMode } from '@prisma/client';
 import { nanoid } from 'nanoid';
 
 import database from '@/db';
 
-export const runtime = 'experimental-edge';
+import prettyPrint from '@/lib/pretty-print';
 
 export const GET = async () => {
   const { userId } = await auth();
@@ -30,8 +31,8 @@ export const GET = async () => {
           refreshInterval: 60_000,
           priceAlerts: true,
           portfolioSummary: false,
-          displayMode: 'comfortable',
-          defaultView: 'list'
+          displayMode: DisplayMode.COMFORTABLE,
+          defaultView: DefaultView.LIST
         }
       });
 
@@ -40,13 +41,15 @@ export const GET = async () => {
 
     return NextResponse.json(settings);
   } catch (error) {
-    console.error('Settings fetch error:', error);
+    prettyPrint.error(error);
     return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 });
   }
 };
 
 export const PUT = async (request: NextRequest) => {
   const body = await request.json();
+
+  prettyPrint.log(body);
   const { userId } = await auth();
 
   if (!userId) {
@@ -72,8 +75,8 @@ export const PUT = async (request: NextRequest) => {
       refreshInterval: body.refreshInterval ?? 60_000,
       priceAlerts: body.priceAlerts ?? true,
       portfolioSummary: body.portfolioSummary ?? false,
-      displayMode: body.displayMode ?? 'comfortable',
-      defaultView: body.defaultView ?? 'list'
+      displayMode: body.displayMode ?? DisplayMode.COMFORTABLE,
+      defaultView: body.defaultView ?? DefaultView.LIST
     }
   });
 
