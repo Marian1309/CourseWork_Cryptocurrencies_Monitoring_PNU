@@ -1,10 +1,13 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { auth, clerkClient } from '@clerk/nextjs/server';
+import { auth } from '@clerk/nextjs/server';
+import { DefaultView, DisplayMode } from '@prisma/client';
 import { nanoid } from 'nanoid';
 
 import database from '@/db';
+
+import prettyPrint from '@/lib/pretty-print';
 
 export const GET = async () => {
   const { userId } = await auth();
@@ -12,9 +15,6 @@ export const GET = async () => {
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
-  const client = await clerkClient();
-  const user = await client.users.getUser(userId);
 
   try {
     const settings = await database.settings.findUnique({
@@ -31,10 +31,8 @@ export const GET = async () => {
           refreshInterval: 60_000,
           priceAlerts: true,
           portfolioSummary: false,
-          displayMode: 'comfortable',
-          defaultView: 'list',
-          fullName: user?.fullName ?? '',
-          email: user?.emailAddresses[0].emailAddress ?? ''
+          displayMode: DisplayMode.COMFORTABLE,
+          defaultView: DefaultView.LIST
         }
       });
 
@@ -43,20 +41,20 @@ export const GET = async () => {
 
     return NextResponse.json(settings);
   } catch (error) {
-    console.error('Settings fetch error:', error);
+    prettyPrint.error(error);
     return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 });
   }
 };
 
 export const PUT = async (request: NextRequest) => {
   const body = await request.json();
+
+  prettyPrint.log(body);
   const { userId } = await auth();
 
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const client = await clerkClient();
-  const user = await client.users.getUser(userId);
 
   const settings = await database.settings.upsert({
     where: { userId },
@@ -67,9 +65,7 @@ export const PUT = async (request: NextRequest) => {
       priceAlerts: body.priceAlerts,
       portfolioSummary: body.portfolioSummary,
       displayMode: body.displayMode,
-      defaultView: body.defaultView,
-      fullName: body.fullName ?? user?.fullName ?? '',
-      email: user?.emailAddresses[0].emailAddress ?? ''
+      defaultView: body.defaultView
     },
     create: {
       id: nanoid(),
@@ -79,10 +75,8 @@ export const PUT = async (request: NextRequest) => {
       refreshInterval: body.refreshInterval ?? 60_000,
       priceAlerts: body.priceAlerts ?? true,
       portfolioSummary: body.portfolioSummary ?? false,
-      displayMode: body.displayMode ?? 'comfortable',
-      defaultView: body.defaultView ?? 'list',
-      fullName: user?.fullName ?? '',
-      email: user?.emailAddresses[0].emailAddress ?? ''
+      displayMode: body.displayMode ?? DisplayMode.COMFORTABLE,
+      defaultView: body.defaultView ?? DefaultView.LIST
     }
   });
 

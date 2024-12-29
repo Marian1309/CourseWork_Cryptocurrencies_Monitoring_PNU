@@ -4,7 +4,7 @@ import type { FC } from 'react';
 import { useEffect, useState, useTransition } from 'react';
 
 import { useUser } from '@clerk/nextjs';
-import type { Settings } from '@prisma/client';
+import type { DefaultView, DisplayMode, Settings } from '@prisma/client';
 
 import { toast } from '@/hooks/use-toast';
 
@@ -202,7 +202,7 @@ const SettingsPage: FC = () => {
                   onValueChange={(value) =>
                     setTemporarySettings((previous) => ({
                       ...previous!,
-                      displayMode: value as 'compact' | 'comfortable'
+                      displayMode: value as DisplayMode
                     }))
                   }
                   value={temporarySettings?.displayMode}
@@ -227,7 +227,7 @@ const SettingsPage: FC = () => {
                   onValueChange={(value) =>
                     setTemporarySettings((previous) => ({
                       ...previous!,
-                      defaultView: value as 'list' | 'grid'
+                      defaultView: value as DefaultView
                     }))
                   }
                   value={temporarySettings?.defaultView}

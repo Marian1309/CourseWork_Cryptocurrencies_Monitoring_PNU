@@ -34,7 +34,7 @@ const TableSearchInput: FC<TableSearchInputProperties> = memo(
         if (localSearchTerm !== searchTerm) {
           setSearchTerm(localSearchTerm.trim());
         }
-      }, 800); // Adjust debounce delay (300ms is common)
+      }, 800); // Adjust debounce delay
 
       return () => clearTimeout(debounceTimeout); // Cleanup timeout on input change or unmount
     }, [localSearchTerm, searchTerm, setSearchTerm]);

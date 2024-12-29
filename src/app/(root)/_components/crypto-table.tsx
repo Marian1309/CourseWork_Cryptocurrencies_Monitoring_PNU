@@ -3,8 +3,10 @@
 import type { FC } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 
+import type { DefaultView } from '@prisma/client';
 import { Grid, List } from 'lucide-react';
 import { useQueryState } from 'nuqs';
 
@@ -19,12 +21,15 @@ import Loader from '@/components/ui/loader';
 
 import checkUser from '@/actions/check-user';
 import getUserBalance from '@/actions/get-balance';
-import { CRYPTO_LIMIT, TABLE_HEADERS } from '@/constants';
+import { CRYPTO_LIMIT_PER_PAGE, TABLE_HEADERS } from '@/constants';
 
-import BuyCoinDialog from './buy-coin-dialog';
-import CryptoDetails from './crypto-details';
 import TablePagination from './table-pagination';
 import TableSearchInput from './table-search-input';
+
+const BuyCoinDialog = dynamic(() => import('./buy-coin-dialog'), {
+  ssr: false,
+  loading: () => <Loader />
+});
 
 const CryptoTable: FC = () => {
   const [searchPage, setSearchPage] = useQueryState('search_page', {
@@ -36,14 +41,13 @@ const CryptoTable: FC = () => {
     clearOnDefault: true
   });
 
-  const [selectedCrypto, setSelectedCrypto] = useState<CryptoData | undefined>();
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: 'market_cap',
     direction: 'desc'
   });
   const [balance, setBalance] = useState(0);
   const { settings, updateSettings } = useSettings();
-  const [view, setView] = useState(settings?.defaultView || 'list');
+  const [view, setView] = useState<DefaultView>(settings?.defaultView || 'LIST');
 
   const {
     data: response,
@@ -51,15 +55,16 @@ const CryptoTable: FC = () => {
     error,
     isRefetching,
     refetch
-  } = useCrypto(searchTerm, settings?.refreshInterval || 60_000, {
-    params: {
-      page: searchPage,
-      limit: CRYPTO_LIMIT,
-      searchTerm: searchTerm || undefined
-    }
-  });
-
-  const data = response?.data || [];
+  } = useCrypto(
+    {
+      params: {
+        page: searchPage,
+        limit: CRYPTO_LIMIT_PER_PAGE,
+        searchTerm: searchTerm || undefined
+      }
+    },
+    settings?.refreshInterval || 60_000
+  );
 
   useEffect(() => {
     const fetchBalance = async () => {
@@ -99,7 +104,7 @@ const CryptoTable: FC = () => {
   }, []);
 
   const sortedCryptoData = useMemo(() => {
-    if (!data) return [];
+    if (!response?.data) return [];
 
     const compareValues = (a: CryptoData, b: CryptoData) => {
       const { key, direction } = sortConfig;
@@ -114,27 +119,24 @@ const CryptoTable: FC = () => {
       }
     };
 
-    return [...data].sort(compareValues);
-  }, [data, sortConfig]);
-
-  const handleCryptoClick = useCallback((crypto: CryptoData) => {
-    setSelectedCrypto(crypto);
-  }, []);
+    return [...(response?.data || [])].sort(compareValues);
+  }, [response, sortConfig]);
 
   const toggleView = useCallback(async () => {
-    const newView = view === 'list' ? 'grid' : 'list';
+    const newView = view === 'LIST' ? 'GRID' : 'LIST';
     setView(newView);
     await updateSettings({ defaultView: newView });
   }, [view, updateSettings]);
 
-  if (isLoading || isRefetching)
+  if (isLoading || isRefetching) {
     return (
-      <div className="relative flex-1 flex-center">
+      <div className="relative mt-4 flex-1 flex-center">
         <Loader />
       </div>
     );
+  }
 
-  if (error)
+  if (error) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center text-red-500 dark:text-red-400">
@@ -143,10 +145,11 @@ const CryptoTable: FC = () => {
         </div>
       </div>
     );
+  }
 
   return (
     <>
-      <div className="flex items-center justify-between pb-4">
+      <div className="mt-4 flex items-center justify-between pb-4">
         <TableSearchInput
           className="flex-1"
           placeholder="Search by name or symbol..."
@@ -155,11 +158,11 @@ const CryptoTable: FC = () => {
         />
 
         <div className="cursor-pointer p-2" onClick={toggleView}>
-          {view === 'list' ? <Grid className="h-6 w-6" /> : <List className="h-6 w-6" />}
+          {view === 'LIST' ? <Grid className="h-6 w-6" /> : <List className="h-6 w-6" />}
         </div>
       </div>
 
-      {view === 'list' ? (
+      {view === 'LIST' ? (
         <div className="overflow-x-auto rounded-lg shadow">
           <table className="min-w-full bg-white dark:bg-gray-800">
             <thead className="bg-gray-100 dark:bg-gray-700">
@@ -190,7 +193,6 @@ const CryptoTable: FC = () => {
                   <tr
                     className="cursor-pointer transition-colors hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800"
                     key={crypto.id}
-                    onClick={() => handleCryptoClick(crypto)}
                   >
                     <td className="whitespace-nowrap px-6 py-4">{rank}</td>
                     <td className="flex items-center whitespace-nowrap px-6 py-4">
@@ -203,7 +205,7 @@ const CryptoTable: FC = () => {
                       <span className="pl-2">{name}</span>
                     </td>
                     <td className="whitespace-nowrap px-6 py-4">{symbol}</td>
-                    <td className="whitespace-nowrap px-6 py-4">${price}</td>
+                    <td className="whitespace-nowrap px-6 py-4">{price}</td>
                     <td className="whitespace-nowrap px-6 py-4">
                       <span
                         className={`${
@@ -213,7 +215,7 @@ const CryptoTable: FC = () => {
                         {percent_change_24h}%
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4">${market_cap}</td>
+                    <td className="whitespace-nowrap px-6 py-4">{market_cap}</td>
                   </tr>
                 );
               })}
@@ -245,9 +247,9 @@ const CryptoTable: FC = () => {
 
                 <CardContent className="flex items-end justify-between">
                   <div>
-                    <div className="text-2xl font-bold">${price}</div>
+                    <div className="text-2xl font-bold">{price}</div>
                     <p
-                      className={`text-xs ${
+                      className={`pt-2 text-xs ${
                         percent_change_24h > 0 ? 'text-green-600' : 'text-red-600'
                       }`}
                     >
@@ -257,7 +259,7 @@ const CryptoTable: FC = () => {
                       Rank: {rank}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Market Cap: ${market_cap}
+                      Market Cap: {market_cap}
                     </p>
                   </div>
 
@@ -273,13 +275,6 @@ const CryptoTable: FC = () => {
             );
           })}
         </div>
-      )}
-
-      {selectedCrypto && (
-        <CryptoDetails
-          crypto={selectedCrypto}
-          onClose={() => setSelectedCrypto(undefined)}
-        />
       )}
 
       <TablePagination

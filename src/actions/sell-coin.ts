@@ -13,73 +13,46 @@ type Parameters = {
 const sellCoin = async ({ coinId, amount, soldPrice }: Parameters) => {
   const { userId } = await auth();
 
-  if (!userId) {
-    throw new Error('User not found');
-  }
+  if (!userId) throw new Error('User not found');
+  if (!coinId || !amount) throw new Error('Required params');
 
-  if (!coinId || !amount) {
-    throw new Error('Required params');
-  }
-
-  return await database.$transaction(async (tx) => {
-    const user = await tx.user.findFirst({
-      where: {
-        id: userId
+  return database.$transaction(async (tx) => {
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      include: {
+        coins: {
+          where: { coinId }
+        }
       }
     });
 
-    if (!user) {
-      throw new Error('User not found');
-    }
+    if (!user) throw new Error('User not found');
 
-    const userCoins = await tx.coin.findMany({
-      where: {
-        userId
-      }
-    });
+    const userCoin = user.coins[0]; // Since `where: { coinId }` ensures only relevant coin
 
-    const userCoin = userCoins.find((coin) => coin.coinId === coinId);
-
-    if (!userCoin) {
-      throw new Error('Coin not found');
-    }
-
-    if (userCoin.amount < amount) {
-      throw new Error('Not enough coins');
-    }
-
-    const userBalance = user.balance;
+    if (!userCoin) throw new Error('Coin not found');
+    if (userCoin.amount < amount) throw new Error('Not enough coins');
 
     const totalSoldPrice = amount * soldPrice;
+    const newBalance = user.balance + totalSoldPrice;
 
-    const newBalance = userBalance + totalSoldPrice;
-
-    await tx.user.update({
-      where: {
-        id: user.id
-      },
-      data: {
-        balance: newBalance
-      }
-    });
-
-    const updatedUserCoin = await tx.coin.update({
-      where: {
-        id: userCoin.id
-      },
-      data: {
-        amount: {
-          decrement: amount
+    // Update balance and coin atomically
+    await Promise.all([
+      tx.user.update({
+        where: { id: user.id },
+        data: { balance: newBalance }
+      }),
+      tx.coin.update({
+        where: { id: userCoin.id },
+        data: {
+          amount: userCoin.amount > amount ? { decrement: amount } : undefined // Avoid decrementing to zero
         }
-      }
-    });
+      })
+    ]);
 
-    if (updatedUserCoin.amount === 0) {
-      await tx.coin.delete({
-        where: {
-          id: userCoin.id
-        }
-      });
+    // Delete coin if the amount reaches zero
+    if (userCoin.amount === amount) {
+      await tx.coin.delete({ where: { id: userCoin.id } });
     }
   });
 };

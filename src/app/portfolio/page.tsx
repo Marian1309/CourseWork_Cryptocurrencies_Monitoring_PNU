@@ -1,4 +1,4 @@
-'use client';
+import type { NextPage } from 'next';
 
 import {
   Card,
@@ -8,23 +8,21 @@ import {
   CardTitle
 } from '@/components/ui/card';
 
-import PortfolioTable from './table';
+import PortfolioTable from './_components/table';
 
-const PortfolioPage = () => {
+const PortfolioPage: NextPage = () => {
   return (
     <div className="mx-auto px-8 py-8">
-      <div className="">
-        <Card>
-          <CardHeader>
-            <CardTitle>Portfolio Summary</CardTitle>
-            <CardDescription>Your current cryptocurrency holdings</CardDescription>
-          </CardHeader>
+      <Card>
+        <CardHeader>
+          <CardTitle>Portfolio Summary</CardTitle>
+          <CardDescription>Your current cryptocurrency holdings</CardDescription>
+        </CardHeader>
 
-          <CardContent>
-            <PortfolioTable />
-          </CardContent>
-        </Card>
-      </div>
+        <CardContent>
+          <PortfolioTable />
+        </CardContent>
+      </Card>
     </div>
   );
 };

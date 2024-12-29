@@ -9,11 +9,10 @@ export const TABLE_HEADERS = [
   { label: 'Market Cap', key: 'market_cap' }
 ] as const;
 
-export const CRYPTO_LIMIT = 30;
+export const CRYPTO_LIMIT_PER_PAGE = 30;
 
 export const NAV_ITEMS = [
   { name: 'Dashboard', href: '/', icon: Home },
   { name: 'Portfolio', href: '/portfolio', icon: PieChart },
-  // { name: 'News', href: '/news', icon: Newspaper },
   { name: 'Settings', href: '/settings', icon: Settings }
 ];

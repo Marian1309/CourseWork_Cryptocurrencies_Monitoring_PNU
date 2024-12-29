@@ -21,11 +21,15 @@ type Properties = {
 const TablePagination: FC<Properties> = ({ searchPage, onPageChange, totalItems }) => {
   const router = useRouter();
 
-  const totalPages = Math.ceil(totalItems);
+  // Calculate total pages based on totalItems and itemsPerPage
+  const totalPages = totalItems;
 
   // Ensure `searchPage` is always within valid range
-  if (+searchPage > totalPages && totalPages > 0) {
-    router.push(`/?search_page=${totalPages}`, { scroll: false });
+  const currentPage = Math.min(Math.max(1, +searchPage || 1), totalPages);
+
+  // If searchPage is out of range, navigate to the last page
+  if (currentPage !== +searchPage && totalPages > 0) {
+    router.push(`/?search_page=${currentPage}`, { scroll: false });
     return;
   }
 
@@ -43,7 +47,7 @@ const TablePagination: FC<Properties> = ({ searchPage, onPageChange, totalItems 
       <PaginationItem className="dark:text-white" key={1}>
         <PaginationLink
           className="cursor-pointer dark:text-white"
-          isActive={+searchPage === 1}
+          isActive={currentPage === 1}
           onClick={() => handlePageChange(1)}
         >
           1
@@ -52,7 +56,7 @@ const TablePagination: FC<Properties> = ({ searchPage, onPageChange, totalItems 
     );
 
     // Ellipsis before middle pages
-    if (+searchPage > 3) {
+    if (currentPage > 3) {
       items.push(
         <PaginationItem className="dark:text-white" key="ellipsis1">
           <PaginationEllipsis />
@@ -62,15 +66,15 @@ const TablePagination: FC<Properties> = ({ searchPage, onPageChange, totalItems 
 
     // Middle pages
     for (
-      let index = Math.max(2, +searchPage - 1);
-      index <= Math.min(totalPages - 1, +searchPage + 1);
+      let index = Math.max(2, currentPage - 1);
+      index <= Math.min(totalPages - 1, currentPage + 1);
       index++
     ) {
       items.push(
         <PaginationItem key={index}>
           <PaginationLink
             className="cursor-pointer dark:text-white"
-            isActive={+searchPage === index}
+            isActive={currentPage === index}
             onClick={() => handlePageChange(index)}
           >
             {index}
@@ -80,7 +84,7 @@ const TablePagination: FC<Properties> = ({ searchPage, onPageChange, totalItems 
     }
 
     // Ellipsis after middle pages
-    if (+searchPage < totalPages - 2) {
+    if (currentPage < totalPages - 2) {
       items.push(
         <PaginationItem className="dark:text-white" key="ellipsis2">
           <PaginationEllipsis />
@@ -93,7 +97,7 @@ const TablePagination: FC<Properties> = ({ searchPage, onPageChange, totalItems 
       <PaginationItem className="dark:text-white" key={totalPages}>
         <PaginationLink
           className="cursor-pointer dark:text-white"
-          isActive={+searchPage === totalPages}
+          isActive={currentPage === totalPages}
           onClick={() => handlePageChange(totalPages)}
         >
           {totalPages}

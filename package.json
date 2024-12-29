@@ -28,6 +28,7 @@
     "db:migrate": "prisma migrate dev --name",
     "db:gen": "prisma generate",
     "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset",
     "test:unit": "vitest run --passWithNoTests",
     "test:e2e:all": "playwright test && rm -rf test-results",
     "test:e2e:chromium": "playwright test --project=chromium && rm -rf test-results",

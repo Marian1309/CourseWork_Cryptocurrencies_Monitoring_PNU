@@ -4,9 +4,11 @@ import { useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import * as z from 'zod';
 
 import { toast } from '@/hooks/use-toast';
+
+import type { BuyCoinSchema } from '@/schemas/but-coin';
+import { buyCoinSchema } from '@/schemas/but-coin';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -30,15 +32,6 @@ import { Input } from '@/components/ui/input';
 
 import buyCoin from '@/actions/buy-coin';
 
-const formSchema = z.object({
-  coinName: z.string().min(1, 'Coin name is required'),
-  amount: z
-    .string()
-    .refine((value) => !Number.isNaN(Number(value)) && Number(value) > 0, {
-      message: 'Amount must be a positive number'
-    })
-});
-
 type BuyCoinDialogProperties = {
   coinName: string;
   coinPrice: number;
@@ -54,37 +47,56 @@ const BuyCoinDialog = ({
   balance,
   coinId
 }: BuyCoinDialogProperties) => {
-  const [open, setOpen] = useState<boolean>(false);
+  const [{ open, isSubmitting }, setBuyDialog] = useState({
+    open: false,
+    isSubmitting: false
+  });
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<BuyCoinSchema>({
+    resolver: zodResolver(buyCoinSchema),
     defaultValues: {
       coinName,
       amount: ''
     }
   });
 
-  const handleBuyCoin = async () => {
-    await buyCoin({
-      name: coinName,
-      amount: Number(form.getValues('amount')),
-      symbol: coinSymbol,
-      price: coinPrice,
-      id: coinId
-    });
+  const handleBuyCoin = async (data: BuyCoinSchema) => {
+    setBuyDialog((previous) => ({ ...previous, isSubmitting: true }));
 
-    form.reset();
+    try {
+      await buyCoin({
+        name: coinName,
+        amount: +data.amount,
+        symbol: coinSymbol,
+        price: coinPrice,
+        id: coinId
+      });
 
-    setOpen(false);
+      form.reset();
+      setBuyDialog((previous) => ({ ...previous, open: false }));
 
-    toast({
-      title: 'Coin purchased',
-      description: `You've bought ${form.getValues('amount')} ${coinName}.`
-    });
+      toast({
+        title: 'Coin purchased',
+        description: `You've bought ${data.amount} ${coinName}.`
+      });
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'There was an error while purchasing the coin.',
+        variant: 'destructive'
+      });
+    } finally {
+      setBuyDialog((previous) => ({ ...previous, isSubmitting: false }));
+    }
   };
 
   return (
-    <Dialog onOpenChange={setOpen} open={open}>
+    <Dialog
+      onOpenChange={() =>
+        setBuyDialog((previous) => ({ ...previous, open: !previous.open }))
+      }
+      open={open}
+    >
       <DialogTrigger asChild>
         <Button variant="outline">Buy Coin</Button>
       </DialogTrigger>
@@ -129,7 +141,9 @@ const BuyCoinDialog = ({
             />
 
             <DialogFooter>
-              <Button type="submit">Buy</Button>
+              <Button disabled={isSubmitting} type="submit">
+                {isSubmitting ? 'Processing...' : 'Buy'}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

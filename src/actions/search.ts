@@ -4,27 +4,28 @@ import axios from 'axios';
 
 import prettyPrint from '@/lib/pretty-print';
 
-const searchCrypto = async ({
-  page,
-  limit,
-  searchTerm
-}: {
+type Parameters = {
   page: number;
   limit: number;
   searchTerm?: string;
-}) => {
+};
+
+const searchCrypto = async ({ page, limit, searchTerm }: Parameters) => {
+  const parameters = {
+    page,
+    limit,
+    searchTerm: searchTerm || ''
+  };
+
   try {
+    // Fetch data from the API, only passing `searchTerm` if it's provided
     const { data } = await axios.get('https://coins-marian1309.vercel.app', {
-      params: {
-        searchTerm: searchTerm || undefined,
-        page,
-        limit
-      }
+      params: parameters
     });
 
     return data;
-  } catch (error: unknown) {
-    prettyPrint(error);
+  } catch (error) {
+    prettyPrint.error(`Error fetching crypto data: ${error}`);
   }
 };
 

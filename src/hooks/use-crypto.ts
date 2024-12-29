@@ -2,24 +2,23 @@ import { useQuery } from '@tanstack/react-query';
 
 import searchCrypto from '@/actions/search';
 
-interface CryptoQueryParameters {
+type CryptoQueryParameters = {
   params: {
     page: string;
     limit: number;
     searchTerm?: string;
   };
-}
+};
 
 const useCrypto = (
-  searchTerm: string,
-  refetchInterval: number,
-  { params: { page, limit } }: CryptoQueryParameters
+  { params: { page, limit, searchTerm } }: CryptoQueryParameters,
+  refetchInterval: number
 ) => {
   return useQuery({
     queryKey: ['crypto', page, searchTerm],
     queryFn: () =>
       searchCrypto({
-        page: Number.parseInt(page),
+        page: +page,
         limit,
         searchTerm: searchTerm || undefined
       }),

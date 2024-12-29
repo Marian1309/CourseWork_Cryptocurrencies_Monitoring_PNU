@@ -15,26 +15,32 @@ type Coin = {
 const buyCoin = async (coin: Coin) => {
   const { userId } = await auth();
 
-  if (!userId) {
-    throw new Error('User not found');
-  }
+  if (!userId) throw new Error('User not found');
+
+  const totalCost = +(+coin.price.toString().slice(1) * coin.amount).toFixed(2);
 
   await database.$transaction(async (tx) => {
+    // Add the coin to the user's account
     await tx.coin.create({
       data: {
         name: coin.name,
         amount: coin.amount,
         symbol: coin.symbol,
-        boughtPrice: coin.price,
+        boughtPrice: +coin.price.toString().slice(1),
         boughtAt: new Date(),
         coinId: +coin.id,
         userId
       }
     });
 
+    // Deduct the total cost from the user's balance
     await tx.user.update({
       where: { id: userId },
-      data: { balance: { decrement: Number(coin.price.toFixed(2)) * coin.amount } }
+      data: {
+        balance: {
+          decrement: totalCost
+        }
+      }
     });
   });
 };
