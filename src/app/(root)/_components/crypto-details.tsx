@@ -10,13 +10,7 @@ type CryptoDetailsProperties = {
 const CryptoDetails: FC<CryptoDetailsProperties> = ({ crypto, onClose }) => {
   if (!crypto) return;
 
-  const {
-    name,
-    symbol,
-    quote: { USD },
-    circulating_supply,
-    cmc_rank
-  } = crypto;
+  const { name, symbol, price, market_cap, percent_change_24h, rank } = crypto;
 
   return (
     <div
@@ -30,51 +24,32 @@ const CryptoDetails: FC<CryptoDetailsProperties> = ({ crypto, onClose }) => {
           </h3>
 
           <div className="mt-2 px-7 py-3">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Rank: {cmc_rank}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Rank: {rank}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Price: ${price}</p>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Price: ${USD.price.toFixed(2)}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Market Cap: ${USD.market_cap.toLocaleString()}
+              Market Cap: ${market_cap}
             </p>
 
             <p className="text-sm text-gray-500 dark:text-gray-400">
               24h Change:
               <span
-                className={USD.percent_change_24h > 0 ? 'text-green-600' : 'text-red-600'}
+                className={percent_change_24h > 0 ? 'text-green-600' : 'text-red-600'}
               >
-                {USD.percent_change_24h.toFixed(2)}%
+                {percent_change_24h}%
               </span>
             </p>
-
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              7d Change:
-              <span
-                className={USD.percent_change_7d > 0 ? 'text-green-600' : 'text-red-600'}
-              >
-                {USD.percent_change_7d.toFixed(2)}%
-              </span>
-            </p>
-
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Volume (24h): ${USD.volume_24h.toLocaleString()}
-            </p>
-
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Circulating Supply: {circulating_supply.toLocaleString()} {symbol}
-            </p>
           </div>
+        </div>
 
-          <div className="items-center px-4 py-3">
-            <button
-              className="w-full rounded-md bg-blue-500 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
-              id="ok-btn"
-              onClick={onClose}
-              type="button"
-            >
-              Close
-            </button>
-          </div>
+        <div className="items-center px-4 py-3">
+          <button
+            className="w-full rounded-md bg-blue-500 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            id="ok-btn"
+            onClick={onClose}
+            type="button"
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>

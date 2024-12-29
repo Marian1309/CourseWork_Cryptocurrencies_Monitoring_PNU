@@ -15,24 +15,30 @@ import {
 type Properties = {
   searchPage: string;
   onPageChange: (page: number) => void;
+  totalItems: number;
 };
 
-const TablePagination: FC<Properties> = ({ searchPage, onPageChange }) => {
+const TablePagination: FC<Properties> = ({ searchPage, onPageChange, totalItems }) => {
   const router = useRouter();
-  const totalPages = 349;
 
-  if (+searchPage > totalPages) {
+  const totalPages = Math.ceil(totalItems);
+
+  // Ensure `searchPage` is always within valid range
+  if (+searchPage > totalPages && totalPages > 0) {
     router.push(`/?search_page=${totalPages}`, { scroll: false });
+    return;
   }
 
   const handlePageChange = (page: number) => {
-    router.push(`/?search_page=${page}`, { scroll: false });
     onPageChange(page);
   };
 
   const renderPaginationItems = () => {
+    if (totalPages <= 1) return; // No pagination if there’s only 1 page
+
     const items = [];
 
+    // First page
     items.push(
       <PaginationItem className="dark:text-white" key={1}>
         <PaginationLink
@@ -45,6 +51,7 @@ const TablePagination: FC<Properties> = ({ searchPage, onPageChange }) => {
       </PaginationItem>
     );
 
+    // Ellipsis before middle pages
     if (+searchPage > 3) {
       items.push(
         <PaginationItem className="dark:text-white" key="ellipsis1">
@@ -53,6 +60,7 @@ const TablePagination: FC<Properties> = ({ searchPage, onPageChange }) => {
       );
     }
 
+    // Middle pages
     for (
       let index = Math.max(2, +searchPage - 1);
       index <= Math.min(totalPages - 1, +searchPage + 1);
@@ -71,6 +79,7 @@ const TablePagination: FC<Properties> = ({ searchPage, onPageChange }) => {
       );
     }
 
+    // Ellipsis after middle pages
     if (+searchPage < totalPages - 2) {
       items.push(
         <PaginationItem className="dark:text-white" key="ellipsis2">
@@ -79,6 +88,7 @@ const TablePagination: FC<Properties> = ({ searchPage, onPageChange }) => {
       );
     }
 
+    // Last page
     items.push(
       <PaginationItem className="dark:text-white" key={totalPages}>
         <PaginationLink

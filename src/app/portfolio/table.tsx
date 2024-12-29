@@ -1,10 +1,14 @@
 'use client';
 
+import type { FC } from 'react';
 import { useEffect, useState } from 'react';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 import { Eye, Loader2, MoreHorizontal, Trash } from 'lucide-react';
+
+import { toast } from '@/hooks/use-toast';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -25,6 +29,7 @@ import {
 
 import getCoinData from '@/actions/get-coin-data';
 import getUserCoins from '@/actions/get-user-coins';
+import sellCoin from '@/actions/sell-coin';
 
 type Coin = {
   symbol: string;
@@ -36,11 +41,13 @@ type Coin = {
   name: string;
 };
 
-const PortfolioTable = () => {
+const PortfolioTable: FC = () => {
   const [{ loading, data }, setState] = useState<{ loading: boolean; data: Coin[] }>({
     loading: true,
     data: []
   });
+
+  const router = useRouter();
 
   useEffect(() => {
     (async () => {
@@ -60,13 +67,13 @@ const PortfolioTable = () => {
         }, {});
 
         const portfolio = coins.map((coin) => ({
+          name: coin.name,
           symbol: coin.symbol,
           boughtPrice: coin.boughtPrice,
           amount: coin.amount,
           currentPrice: coinDataMap[coin.symbol]?.[coin.symbol]?.quote?.USD?.price || 0,
           value: coin.boughtPrice * coin.amount,
-          coinId: coinDataMap[coin.symbol].coinId,
-          name: coin.name
+          coinId: coinDataMap[coin.symbol].coinId
         }));
 
         setState({ loading: false, data: portfolio });
@@ -77,9 +84,34 @@ const PortfolioTable = () => {
     })();
   }, []);
 
-  if (loading) return <Loader2 className="h-8 w-8 animate-spin" />;
+  if (loading) {
+    return (
+      <div className="flex-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   const totalValue = data.reduce((sum, { value }) => sum + (value || 0), 0);
+
+  const calculateChange = (currentPrice: number, boughtPrice: number) => {
+    const percentage = (((currentPrice - boughtPrice) / boughtPrice) * 100).toFixed(1);
+
+    return +percentage > 0 ? (
+      <span className="text-green-600">+{percentage}%</span>
+    ) : (
+      <span className="text-red-600">{percentage}%</span>
+    );
+  };
+
+  const sell = async ({ coinId, amount, currentPrice, symbol }: any) => {
+    await sellCoin({ coinId, amount, soldPrice: currentPrice });
+    router.refresh();
+    toast({
+      title: `You sold ${amount} ${symbol}${amount > 1 ? 's' : ''}`,
+      description: 'Your balance has been updated'
+    });
+  };
 
   return (
     <Table>
@@ -90,6 +122,7 @@ const PortfolioTable = () => {
           <TableHead>Bought Price</TableHead>
           <TableHead>Current Price</TableHead>
           <TableHead>Value</TableHead>
+          <TableHead>Percentage</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -111,6 +144,7 @@ const PortfolioTable = () => {
               <TableCell>${boughtPrice?.toFixed(3)}</TableCell>
               <TableCell>${currentPrice?.toFixed(3)}</TableCell>
               <TableCell>${value?.toFixed(3)}</TableCell>
+              <TableCell>{calculateChange(currentPrice, boughtPrice)}</TableCell>
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -124,9 +158,12 @@ const PortfolioTable = () => {
                       <span className="mx-2">Buy more</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-red-500">
+                    <DropdownMenuItem
+                      className="text-red-500"
+                      onClick={() => sell({ coinId, amount: 1, currentPrice, symbol })}
+                    >
                       <Trash className="h-4 w-4" />
-                      <span className="mx-2">Sell permanently</span>
+                      <span className="mx-2">Sell</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -134,12 +171,14 @@ const PortfolioTable = () => {
             </TableRow>
           )
         )}
+
         <TableRow>
-          <TableCell className="font-bold" colSpan={3}>
-            Total Portfolio Value
-          </TableCell>
-          <TableCell className="font-bold">${totalValue.toFixed(2)}</TableCell>
-          <TableCell />
+          <div className="pt-6 text-lg">
+            <TableCell className="font-bold" colSpan={4}>
+              Total Portfolio Value:
+            </TableCell>
+            <TableCell className="font-bold">${totalValue.toFixed(3)}</TableCell>
+          </div>
         </TableRow>
       </TableBody>
     </Table>

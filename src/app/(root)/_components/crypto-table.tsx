@@ -11,7 +11,6 @@ import { useQueryState } from 'nuqs';
 import type { CryptoData, SortConfig } from '@/types/globals';
 
 import useCrypto from '@/hooks/use-crypto';
-import { toast } from '@/hooks/use-toast';
 
 import { useSettings } from '@/context/settings';
 
@@ -20,7 +19,7 @@ import Loader from '@/components/ui/loader';
 
 import checkUser from '@/actions/check-user';
 import getUserBalance from '@/actions/get-balance';
-import { TABLE_HEADERS } from '@/constants';
+import { CRYPTO_LIMIT, TABLE_HEADERS } from '@/constants';
 
 import BuyCoinDialog from './buy-coin-dialog';
 import CryptoDetails from './crypto-details';
@@ -28,10 +27,16 @@ import TablePagination from './table-pagination';
 import TableSearchInput from './table-search-input';
 
 const CryptoTable: FC = () => {
-  const [searchPage, setSearchPage] = useQueryState('search_page', { defaultValue: '1' });
+  const [searchPage, setSearchPage] = useQueryState('search_page', {
+    defaultValue: '1',
+    clearOnDefault: true
+  });
+  const [searchTerm, setSearchTerm] = useQueryState('search_term', {
+    defaultValue: '',
+    clearOnDefault: true
+  });
 
   const [selectedCrypto, setSelectedCrypto] = useState<CryptoData | undefined>();
-  const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: 'market_cap',
     direction: 'desc'
@@ -39,11 +44,22 @@ const CryptoTable: FC = () => {
   const [balance, setBalance] = useState(0);
   const { settings, updateSettings } = useSettings();
   const [view, setView] = useState(settings?.defaultView || 'list');
-  const { data, isLoading, error, isRefetching, refetch } = useCrypto(
-    searchPage,
-    sortConfig,
-    settings?.refreshInterval || 60_000
-  );
+
+  const {
+    data: response,
+    isLoading,
+    error,
+    isRefetching,
+    refetch
+  } = useCrypto(searchTerm, settings?.refreshInterval || 60_000, {
+    params: {
+      page: searchPage,
+      limit: CRYPTO_LIMIT,
+      searchTerm: searchTerm || undefined
+    }
+  });
+
+  const data = response?.data || [];
 
   useEffect(() => {
     const fetchBalance = async () => {
@@ -71,27 +87,9 @@ const CryptoTable: FC = () => {
   }, [settings?.defaultView]);
 
   useEffect(() => {
-    if (isRefetching) {
-      toast({
-        title: 'Data updated',
-        description: 'The data has been updated.',
-        duration: 1500
-      });
-    }
-  }, [isRefetching]);
-
-  useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     refetch();
-  }, [refetch, searchPage]);
-
-  window.addEventListener('resize', () => {
-    if (window.innerWidth <= 800) {
-      setView('grid');
-    } else {
-      setView('list');
-    }
-  });
+  }, [refetch, searchPage, searchTerm]);
 
   const handleSort = useCallback((key: string) => {
     setSortConfig((previous) => ({
@@ -100,30 +98,24 @@ const CryptoTable: FC = () => {
     }));
   }, []);
 
-  const sortedAndFilteredCryptoData = useMemo(() => {
+  const sortedCryptoData = useMemo(() => {
     if (!data) return [];
 
-    const searchTermLower = searchTerm.toLowerCase();
-    const filteredData = data.filter(
-      ({ name, symbol }: CryptoData) =>
-        name.toLowerCase().includes(searchTermLower) ||
-        symbol.toLowerCase().includes(searchTermLower)
-    );
-
-    return filteredData.sort((a: CryptoData, b: CryptoData) => {
-      if (sortConfig.key === 'name' || sortConfig.key === 'symbol') {
-        return sortConfig.direction === 'asc'
-          ? a[sortConfig.key].localeCompare(b[sortConfig.key])
-          : b[sortConfig.key].localeCompare(a[sortConfig.key]);
+    const compareValues = (a: CryptoData, b: CryptoData) => {
+      const { key, direction } = sortConfig;
+      if (key === 'name' || key === 'symbol') {
+        return direction === 'asc'
+          ? a[key].localeCompare(b[key])
+          : b[key].localeCompare(a[key]);
       } else {
-        const aValue = a.quote.USD[sortConfig.key as keyof typeof a.quote.USD];
-        const bValue = b.quote.USD[sortConfig.key as keyof typeof b.quote.USD];
-        return sortConfig.direction === 'asc'
-          ? (aValue as number) - (bValue as number)
-          : (bValue as number) - (aValue as number);
+        const aValue = Number.parseFloat(a[key as keyof CryptoData] as string);
+        const bValue = Number.parseFloat(b[key as keyof CryptoData] as string);
+        return direction === 'asc' ? aValue - bValue : bValue - aValue;
       }
-    });
-  }, [data, searchTerm, sortConfig]);
+    };
+
+    return [...data].sort(compareValues);
+  }, [data, sortConfig]);
 
   const handleCryptoClick = useCallback((crypto: CryptoData) => {
     setSelectedCrypto(crypto);
@@ -135,7 +127,7 @@ const CryptoTable: FC = () => {
     await updateSettings({ defaultView: newView });
   }, [view, updateSettings]);
 
-  if (isLoading)
+  if (isLoading || isRefetching)
     return (
       <div className="relative flex-1 flex-center">
         <Loader />
@@ -190,13 +182,9 @@ const CryptoTable: FC = () => {
             </thead>
 
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {sortedAndFilteredCryptoData.map((crypto: CryptoData) => {
-                const {
-                  name,
-                  symbol,
-                  quote: { USD },
-                  cmc_rank
-                } = crypto;
+              {sortedCryptoData.map((crypto: CryptoData) => {
+                const { name, symbol, price, rank, percent_change_24h, market_cap } =
+                  crypto;
 
                 return (
                   <tr
@@ -204,7 +192,7 @@ const CryptoTable: FC = () => {
                     key={crypto.id}
                     onClick={() => handleCryptoClick(crypto)}
                   >
-                    <td className="whitespace-nowrap px-6 py-4">{cmc_rank}</td>
+                    <td className="whitespace-nowrap px-6 py-4">{rank}</td>
                     <td className="flex items-center whitespace-nowrap px-6 py-4">
                       <Image
                         alt={name}
@@ -215,21 +203,17 @@ const CryptoTable: FC = () => {
                       <span className="pl-2">{name}</span>
                     </td>
                     <td className="whitespace-nowrap px-6 py-4">{symbol}</td>
-                    <td className="whitespace-nowrap px-6 py-4">
-                      ${USD.price.toFixed(2)}
-                    </td>
+                    <td className="whitespace-nowrap px-6 py-4">${price}</td>
                     <td className="whitespace-nowrap px-6 py-4">
                       <span
                         className={`${
-                          USD.percent_change_24h > 0 ? 'text-green-600' : 'text-red-600'
+                          percent_change_24h > 0 ? 'text-green-600' : 'text-red-600'
                         }`}
                       >
-                        {USD.percent_change_24h.toFixed(2)}%
+                        {percent_change_24h}%
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4">
-                      ${USD.market_cap.toLocaleString()}
-                    </td>
+                    <td className="whitespace-nowrap px-6 py-4">${market_cap}</td>
                   </tr>
                 );
               })}
@@ -238,18 +222,13 @@ const CryptoTable: FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {sortedAndFilteredCryptoData.map((crypto: CryptoData) => {
-            const {
-              id,
-              name,
-              symbol,
-              quote: { USD },
-              cmc_rank
-            } = crypto;
+          {sortedCryptoData.map((crypto: CryptoData) => {
+            const { name, symbol, rank, percent_change_24h, market_cap, price } = crypto;
+
             return (
               <Card
                 className="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
-                key={id}
+                key={crypto.id}
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -259,32 +238,34 @@ const CryptoTable: FC = () => {
                   <Image
                     alt={name}
                     height={32}
-                    src={`https://s2.coinmarketcap.com/static/img/coins/32x32/${id}.png`}
+                    src={`https://s2.coinmarketcap.com/static/img/coins/32x32/${crypto.id}.png`}
                     width={32}
                   />
                 </CardHeader>
 
                 <CardContent className="flex items-end justify-between">
                   <div>
-                    <div className="text-2xl font-bold">${USD.price.toFixed(2)}</div>
+                    <div className="text-2xl font-bold">${price}</div>
                     <p
-                      className={`text-xs ${USD.percent_change_24h > 0 ? 'text-green-600' : 'text-red-600'}`}
+                      className={`text-xs ${
+                        percent_change_24h > 0 ? 'text-green-600' : 'text-red-600'
+                      }`}
                     >
-                      {USD.percent_change_24h.toFixed(2)}%
+                      {percent_change_24h}%
                     </p>
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      Rank: {cmc_rank}
+                      Rank: {rank}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Market Cap: ${USD.market_cap.toLocaleString()}
+                      Market Cap: ${market_cap}
                     </p>
                   </div>
 
                   <BuyCoinDialog
                     balance={balance}
-                    coinId={id.toString()}
+                    coinId={crypto.id.toString()}
                     coinName={name}
-                    coinPrice={USD.price}
+                    coinPrice={price}
                     coinSymbol={symbol}
                   />
                 </CardContent>
@@ -304,6 +285,7 @@ const CryptoTable: FC = () => {
       <TablePagination
         onPageChange={(page) => setSearchPage(page.toString())}
         searchPage={searchPage}
+        totalItems={response?.pagination?.totalPages || 0}
       />
     </>
   );

@@ -40,7 +40,7 @@ const Navbar: FC<Properties> = ({ isSignedIn }) => {
     <nav
       className={`fixed left-0 right-0 top-0 z-50 pt-1 transition-all duration-300 ${scrolled ? 'bg-white/80 shadow-md backdrop-blur-md dark:bg-gray-900' : 'bg-transparent'}`}
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 justify-between">
           <div className="flex items-center">
             <div className="flex items-center" onClick={handleHomeClick}>
