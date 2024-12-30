@@ -9,6 +9,8 @@ import database from '@/db';
 
 import prettyPrint from '@/lib/pretty-print';
 
+export const runtime = 'edge';
+
 export const GET = async () => {
   const { userId } = await auth();
 

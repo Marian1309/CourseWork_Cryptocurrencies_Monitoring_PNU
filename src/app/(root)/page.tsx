@@ -5,6 +5,8 @@ import getTrendCoins from '@/actions/get-trend-coins';
 import CryptoTable from './_components/crypto-table';
 import Trends from './_components/trends';
 
+export const runtime = 'edge';
+
 const HomePage: NextPage = async () => {
   const trends = await getTrendCoins();
 
