@@ -9,8 +9,6 @@ import database from '@/db';
 
 import prettyPrint from '@/lib/pretty-print';
 
-export const runtime = 'experimental-edge';
-
 export const GET = async () => {
   const { userId } = await auth();
 
@@ -29,7 +27,6 @@ export const GET = async () => {
           id: nanoid(),
           userId,
           theme: 'system',
-          currency: 'USD',
           refreshInterval: 60_000,
           priceAlerts: true,
           portfolioSummary: false,
@@ -62,7 +59,6 @@ export const PUT = async (request: NextRequest) => {
     where: { userId },
     update: {
       theme: body.theme,
-      currency: body.currency,
       refreshInterval: body.refreshInterval,
       priceAlerts: body.priceAlerts,
       portfolioSummary: body.portfolioSummary,
@@ -73,7 +69,6 @@ export const PUT = async (request: NextRequest) => {
       id: nanoid(),
       userId,
       theme: body.theme ?? 'system',
-      currency: body.currency ?? 'USD',
       refreshInterval: body.refreshInterval ?? 60_000,
       priceAlerts: body.priceAlerts ?? true,
       portfolioSummary: body.portfolioSummary ?? false,

@@ -12,6 +12,8 @@ import { useQueryState } from 'nuqs';
 
 import type { CryptoData, SortConfig } from '@/types/globals';
 
+import { CRYPTO_LIMIT_PER_PAGE, TABLE_HEADERS } from '@/constants';
+
 import useCrypto from '@/hooks/use-crypto';
 
 import { useSettings } from '@/context/settings';
@@ -21,7 +23,6 @@ import Loader from '@/components/ui/loader';
 
 import checkUser from '@/actions/check-user';
 import getUserBalance from '@/actions/get-balance';
-import { CRYPTO_LIMIT_PER_PAGE, TABLE_HEADERS } from '@/constants';
 
 import TablePagination from './table-pagination';
 import TableSearchInput from './table-search-input';
@@ -68,6 +69,7 @@ const CryptoTable: FC = () => {
 
   useEffect(() => {
     const fetchBalance = async () => {
+      await checkUser();
       const balance = await getUserBalance();
       if (typeof balance === 'number') {
         setBalance(balance);
@@ -75,14 +77,6 @@ const CryptoTable: FC = () => {
     };
 
     fetchBalance();
-  }, []);
-
-  useEffect(() => {
-    const isRegistered = localStorage.getItem('isRegistered');
-    if (!isRegistered) {
-      checkUser();
-      localStorage.setItem('isRegistered', 'true');
-    }
   }, []);
 
   useEffect(() => {

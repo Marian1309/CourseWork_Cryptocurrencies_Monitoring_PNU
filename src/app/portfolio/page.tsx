@@ -10,8 +10,6 @@ import {
 
 import PortfolioTable from './_components/table';
 
-export const runtime = 'experimental-edge';
-
 const PortfolioPage: NextPage = () => {
   return (
     <div className="mx-auto px-8 py-8">

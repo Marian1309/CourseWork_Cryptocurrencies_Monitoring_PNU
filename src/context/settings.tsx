@@ -21,7 +21,6 @@ const defaultSettings: Settings = {
   id: '',
   userId: '',
   theme: 'light',
-  currency: 'USD',
   refreshInterval: 60_000,
   priceAlerts: true,
   portfolioSummary: false,

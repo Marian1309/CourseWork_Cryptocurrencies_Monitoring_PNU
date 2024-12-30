@@ -33,7 +33,6 @@ model Settings {
   id               String      @id
   userId           String      @unique
   theme            String      @default("system")
-  currency         String      @default("USD")
   refreshInterval  Int         @default(60000)
   priceAlerts      Boolean     @default(true)
   portfolioSummary Boolean     @default(false)

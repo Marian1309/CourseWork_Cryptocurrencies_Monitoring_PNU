@@ -27,8 +27,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import Saving from './_components/saving';
 
-export const runtime = 'experimental-edge';
-
 const SettingsPage: FC = () => {
   const { settings, updateSettings } = useSettings();
   const [temporarySettings, setTemporarySettings] = useState<Settings | undefined>();
