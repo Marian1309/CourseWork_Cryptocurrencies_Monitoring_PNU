@@ -1,5 +1,3 @@
-'use client';
-
 import CryptoTable from './_components/crypto-table';
 import Trends from './_components/trends';
 
