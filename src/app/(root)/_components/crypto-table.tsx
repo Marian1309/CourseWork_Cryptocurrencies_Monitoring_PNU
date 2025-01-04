@@ -87,8 +87,7 @@ const CryptoTable: FC = () => {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    refetch();
-  }, [refetch, searchPage, searchTerm]);
+  }, [searchPage, searchTerm]);
 
   const handleSort = useCallback((key: string) => {
     setSortConfig((previous) => ({

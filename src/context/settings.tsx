@@ -8,6 +8,8 @@ import { useTheme } from 'next-themes';
 
 import prettyPrint from '@/lib/pretty-print';
 
+import { getUserSettings, updateUserSettings } from '@/actions/settings';
+
 type SettingsContextType = {
   settings: Settings | null;
   updateSettings: (newSettings: Partial<Settings>) => Promise<void>;
@@ -43,16 +45,14 @@ const SettingsProvider: FC<Properties> = ({ children }) => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await fetch('/api/settings');
+        const settings = await getUserSettings();
 
-        if (response.ok) {
-          const data = await response.json();
-          setTheme(data.theme);
-          setSettings(data);
-        } else {
-          prettyPrint.error('Failed to fetch settings');
+        if ('error' in settings) {
           setTheme(defaultSettings.theme);
           setSettings(defaultSettings);
+        } else {
+          setTheme(settings.theme);
+          setSettings(settings);
         }
       } catch (error) {
         prettyPrint.error(`Error fetching settings: ${error}`);
@@ -69,19 +69,18 @@ const SettingsProvider: FC<Properties> = ({ children }) => {
   const updateSettings = useCallback(
     async (newSettings: Partial<Settings>) => {
       try {
-        const response = await fetch('/api/settings', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newSettings)
-        });
-        if (response.ok) {
-          const updatedSettings = await response.json();
+        const updatedSettings = await updateUserSettings({
+          ...settings,
+          ...newSettings
+        } as Settings);
+
+        if ('error' in updatedSettings) {
+          prettyPrint.error('Failed to update settings');
+        } else {
           setSettings(updatedSettings);
           if (newSettings.theme) {
             setTheme(newSettings.theme);
           }
-        } else {
-          prettyPrint.error('Failed to update settings');
         }
       } catch (error) {
         prettyPrint.error(`Error updating settings: ${error}`);
