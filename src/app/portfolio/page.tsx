@@ -1,4 +1,6 @@
-import type { NextPage } from 'next';
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
 
 import {
   Card,
@@ -12,8 +14,11 @@ import getUserBalance from '@/actions/get-balance';
 
 import PortfolioTable from './_components/table';
 
-const PortfolioPage: NextPage = async () => {
-  const balance = await getUserBalance();
+const PortfolioPage = () => {
+  const { data: balance } = useQuery({
+    queryFn: () => getUserBalance(),
+    queryKey: ['balance']
+  });
 
   return (
     <div className="mx-auto px-8 py-8">

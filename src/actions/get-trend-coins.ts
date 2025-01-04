@@ -1,6 +1,4 @@
-'use server';
-
-const getTrendCoins = async () => {
+const getTrendCoins = () => {
   const trends: {
     name: string;
     btc: number;

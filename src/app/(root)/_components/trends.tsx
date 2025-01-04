@@ -13,19 +13,11 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-type Properties = {
-  data: {
-    name: string;
-    btc: number;
-    eth: number;
-    bnb: number;
-    sol: number;
-    doge: number;
-    tron: number;
-  }[];
-};
+import getTrendCoins from '@/actions/get-trend-coins';
 
-const Trends = ({ data }: Properties) => {
+const Trends = () => {
+  const data = getTrendCoins();
+
   return (
     <Card>
       <CardHeader>

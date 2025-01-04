@@ -1,13 +1,9 @@
-import type { NextPage } from 'next';
-
-import getTrendCoins from '@/actions/get-trend-coins';
+'use client';
 
 import CryptoTable from './_components/crypto-table';
 import Trends from './_components/trends';
 
-const HomePage: NextPage = async () => {
-  const trends = await getTrendCoins();
-
+const HomePage = () => {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       <div className="mx-auto py-6 sm:px-6 lg:px-8">
@@ -19,7 +15,7 @@ const HomePage: NextPage = async () => {
               specific cryptocurrency.
             </p>
 
-            <Trends data={trends} />
+            <Trends />
 
             <CryptoTable />
           </div>
