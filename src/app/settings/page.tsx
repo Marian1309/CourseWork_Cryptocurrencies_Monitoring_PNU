@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useTransition } from 'react';
 
-import { useUser } from '@clerk/nextjs';
 import type { Settings } from '@prisma/client';
 
 import { toast } from '@/hooks/use-toast';
@@ -24,6 +23,8 @@ import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import Saving from './_components/saving';
+
+export const runtime = 'experimental-edge';
 
 const SettingsPage = () => {
   const { settings, updateSettings } = useSettings();
@@ -59,8 +60,6 @@ const SettingsPage = () => {
   const handleThemeChange = (theme: 'light' | 'dark' | 'system') => {
     setTemporarySettings({ ...temporarySettings, theme } as any);
   };
-
-  const { user } = useUser();
 
   return (
     <div className="container mx-auto py-8">
