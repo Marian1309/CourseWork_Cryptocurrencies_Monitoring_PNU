@@ -1,6 +1,6 @@
 'use client';
 
-import type { FC, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 import { DefaultView, DisplayMode, type Settings } from '@prisma/client';
@@ -36,7 +36,7 @@ type Properties = {
   children: ReactNode;
 };
 
-const SettingsProvider: FC<Properties> = ({ children }) => {
+const SettingsProvider = ({ children }: Properties) => {
   const [settings, setSettings] = useState<Settings | undefined>(defaultSettings);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -86,7 +86,7 @@ const SettingsProvider: FC<Properties> = ({ children }) => {
         prettyPrint.error(`Error updating settings: ${error}`);
       }
     },
-    [setTheme]
+    [setTheme, settings]
   );
 
   const changeTheme = async (theme: 'light' | 'dark' | 'system') => {

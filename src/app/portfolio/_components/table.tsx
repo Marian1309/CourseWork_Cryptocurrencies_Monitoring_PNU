@@ -1,6 +1,5 @@
 'use client';
 
-import type { FC } from 'react';
 import { useEffect, useState } from 'react';
 
 import Image from 'next/image';
@@ -43,7 +42,7 @@ type Coin = {
   name: string;
 };
 
-const PortfolioTable: FC = () => {
+const PortfolioTable = () => {
   const [{ loading, data }, setState] = useState<{ loading: boolean; data: Coin[] }>({
     loading: true,
     data: []

@@ -1,7 +1,5 @@
 'use client';
 
-import type { FC } from 'react';
-
 import {
   CartesianGrid,
   Legend,
@@ -27,7 +25,7 @@ type Properties = {
   }[];
 };
 
-const Trends: FC<Properties> = ({ data }) => {
+const Trends = ({ data }: Properties) => {
   return (
     <Card>
       <CardHeader>

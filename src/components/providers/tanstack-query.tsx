@@ -1,6 +1,6 @@
 'use client';
 
-import type { FC, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useMemo } from 'react';
 
 import type { QueryClientConfig } from '@tanstack/react-query';
@@ -18,7 +18,7 @@ const defaultQueryClientConfig: QueryClientConfig = {
 
 type Properties = { children: ReactNode };
 
-const TanstackQueryProvider: FC<Properties> = ({ children }) => {
+const TanstackQueryProvider = ({ children }: Properties) => {
   const queryClient = useMemo(() => new QueryClient(defaultQueryClientConfig), []);
 
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;

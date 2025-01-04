@@ -1,6 +1,5 @@
 'use client';
 
-import type { FC } from 'react';
 import { useEffect, useState, useTransition } from 'react';
 
 import { useUser } from '@clerk/nextjs';
@@ -27,7 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import Saving from './_components/saving';
 
-const SettingsPage: FC = () => {
+const SettingsPage = () => {
   const { settings, updateSettings } = useSettings();
   const [temporarySettings, setTemporarySettings] = useState<Settings | undefined>();
 

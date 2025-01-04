@@ -1,6 +1,5 @@
 'use client';
 
-import type { FC } from 'react';
 import { useEffect, useState } from 'react';
 
 import Link from 'next/link';
@@ -16,12 +15,12 @@ type Properties = {
   isSignedIn: boolean;
 };
 
-const Navbar: FC<Properties> = ({ isSignedIn }) => {
+const Navbar = ({ isSignedIn }: Properties) => {
   const pathname = usePathname();
   const router = useRouter();
 
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [scrolled, setScrolled] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {

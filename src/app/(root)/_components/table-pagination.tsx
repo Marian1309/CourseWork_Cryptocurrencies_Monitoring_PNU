@@ -1,7 +1,5 @@
 'use client';
 
-import type { FC } from 'react';
-
 import { useRouter } from 'next/navigation';
 
 import {
@@ -18,7 +16,7 @@ type Properties = {
   totalItems: number;
 };
 
-const TablePagination: FC<Properties> = ({ searchPage, onPageChange, totalItems }) => {
+const TablePagination = ({ searchPage, onPageChange, totalItems }: Properties) => {
   const router = useRouter();
 
   // Calculate total pages based on totalItems and itemsPerPage

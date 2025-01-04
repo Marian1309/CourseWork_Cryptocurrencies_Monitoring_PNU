@@ -1,6 +1,6 @@
 'use client';
 
-import type { FC, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
@@ -14,7 +14,7 @@ type Properties = {
   className?: string;
 };
 
-const Providers: FC<Properties> = ({ children, className }) => {
+const Providers = ({ children, className }: Properties) => {
   return (
     <main className={className}>
       <NuqsAdapter>

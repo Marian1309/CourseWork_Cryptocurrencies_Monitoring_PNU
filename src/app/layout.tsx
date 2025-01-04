@@ -1,4 +1,4 @@
-import type { FC, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
@@ -53,7 +53,7 @@ type Properties = {
   children: ReactNode;
 };
 
-const RootLayout: FC<Properties> = async ({ children }) => {
+const RootLayout = async ({ children }: Properties) => {
   const user = await currentUser();
 
   return (

@@ -1,6 +1,5 @@
 'use client';
 
-import type { FC } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import dynamic from 'next/dynamic';
@@ -32,7 +31,7 @@ const BuyCoinDialog = dynamic(() => import('./buy-coin-dialog'), {
   loading: () => <Loader />
 });
 
-const CryptoTable: FC = () => {
+const CryptoTable = () => {
   const [searchPage, setSearchPage] = useQueryState('search_page', {
     defaultValue: '1',
     clearOnDefault: true
@@ -54,8 +53,7 @@ const CryptoTable: FC = () => {
     data: response,
     isLoading,
     error,
-    isRefetching,
-    refetch
+    isRefetching
   } = useCrypto(
     {
       params: {

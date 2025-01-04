@@ -1,8 +1,6 @@
-import type { FC } from 'react';
-
 import Loader from '@/components/ui/loader';
 
-const Loading: FC = () => {
+const Loading = () => {
   return <Loader />;
 };
 
