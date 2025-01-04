@@ -12,8 +12,6 @@ import getUserBalance from '@/actions/get-balance';
 
 import PortfolioTable from './_components/table';
 
-export const runtime = 'experimental-edge';
-
 const PortfolioPage: NextPage = async () => {
   const balance = await getUserBalance();
 
