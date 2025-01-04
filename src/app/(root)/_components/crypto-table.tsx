@@ -13,6 +13,8 @@ import type { CryptoData, SortConfig } from '@/types/globals';
 
 import { CRYPTO_LIMIT_PER_PAGE, TABLE_HEADERS } from '@/constants';
 
+import formatToDollar from '@/lib/format';
+
 import useCrypto from '@/hooks/use-crypto';
 
 import { useSettings } from '@/context/settings';
@@ -119,7 +121,7 @@ const CryptoTable = () => {
     await updateSettings({ defaultView: newView });
   }, [view, updateSettings]);
 
-  if (isLoading || isRefetching) {
+  if (isLoading) {
     return (
       <div className="relative mt-4 flex-1 flex-center">
         <Loader />
@@ -180,6 +182,9 @@ const CryptoTable = () => {
                 const { name, symbol, price, rank, percent_change_24h, market_cap } =
                   crypto;
 
+                const formattedPrice = formatToDollar(price);
+                const formattedMarketCap = formatToDollar(market_cap);
+
                 return (
                   <tr
                     className="cursor-pointer transition-colors hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800"
@@ -196,7 +201,7 @@ const CryptoTable = () => {
                       <span className="pl-2">{name}</span>
                     </td>
                     <td className="whitespace-nowrap px-6 py-4">{symbol}</td>
-                    <td className="whitespace-nowrap px-6 py-4">{price}</td>
+                    <td className="whitespace-nowrap px-6 py-4">{formattedPrice}</td>
                     <td className="whitespace-nowrap px-6 py-4">
                       <span
                         className={`${
@@ -206,7 +211,7 @@ const CryptoTable = () => {
                         {percent_change_24h}%
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4">{market_cap}</td>
+                    <td className="whitespace-nowrap px-6 py-4">{formattedMarketCap}</td>
                   </tr>
                 );
               })}
@@ -217,6 +222,9 @@ const CryptoTable = () => {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {sortedCryptoData.map((crypto: CryptoData) => {
             const { name, symbol, rank, percent_change_24h, market_cap, price } = crypto;
+
+            const formattedPrice = formatToDollar(price);
+            const formattedMarketCap = formatToDollar(market_cap);
 
             return (
               <Card
@@ -237,22 +245,26 @@ const CryptoTable = () => {
                 </CardHeader>
 
                 <CardContent className="flex items-end justify-between">
-                  <div>
-                    <div className="text-2xl font-bold">{price}</div>
-                    <p
-                      className={`pt-2 text-xs ${
-                        percent_change_24h > 0 ? 'text-green-600' : 'text-red-600'
-                      }`}
-                    >
-                      {percent_change_24h}%
-                    </p>
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      Rank: {rank}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Market Cap: {market_cap}
-                    </p>
-                  </div>
+                  {isRefetching ? (
+                    <Loader />
+                  ) : (
+                    <div>
+                      <div className="text-2xl font-bold">{formattedPrice}</div>
+                      <p
+                        className={`pt-2 text-xs ${
+                          percent_change_24h > 0 ? 'text-green-600' : 'text-red-600'
+                        }`}
+                      >
+                        {percent_change_24h}%
+                      </p>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Rank: {rank}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Market Cap: {formattedMarketCap}
+                      </p>
+                    </div>
+                  )}
 
                   <BuyCoinDialog
                     balance={balance}
@@ -260,6 +272,7 @@ const CryptoTable = () => {
                     coinName={name}
                     coinPrice={price}
                     coinSymbol={symbol}
+                    isRefetching={isRefetching}
                   />
                 </CardContent>
               </Card>

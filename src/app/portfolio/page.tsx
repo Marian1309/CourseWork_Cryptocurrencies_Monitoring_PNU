@@ -8,16 +8,24 @@ import {
   CardTitle
 } from '@/components/ui/card';
 
+import getUserBalance from '@/actions/get-balance';
+
 import PortfolioTable from './_components/table';
 
-const PortfolioPage: NextPage = () => {
+const PortfolioPage: NextPage = async () => {
+  const balance = await getUserBalance();
+
   return (
     <div className="mx-auto px-8 py-8">
       <Card>
-        <CardHeader>
-          <CardTitle>Portfolio Summary</CardTitle>
-          <CardDescription>Your current cryptocurrency holdings</CardDescription>
-        </CardHeader>
+        <div className="flex items-start justify-between gap-x-2">
+          <CardHeader className="flex-1">
+            <CardTitle>Portfolio Summary</CardTitle>
+            <CardDescription>Your current cryptocurrency holdings</CardDescription>
+          </CardHeader>
+
+          {balance && <p className="p-6 font-bold">Balance: {balance.toFixed(2)} $</p>}
+        </div>
 
         <CardContent>
           <PortfolioTable />

@@ -1,24 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 
-import { Eye, Loader2, MoreHorizontal, Trash } from 'lucide-react';
+import { Trash } from 'lucide-react';
 
 import prettyPrint from '@/lib/pretty-print';
 
-import { toast } from '@/hooks/use-toast';
-
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
+import Loader from '@/components/ui/loader';
 import {
   Table,
   TableBody,
@@ -30,7 +21,8 @@ import {
 
 import getCoinData from '@/actions/get-coin-data';
 import getUserCoins from '@/actions/get-user-coins';
-import sellCoin from '@/actions/sell-coin';
+
+import BuyMoreDialog from './sell-dialog';
 
 type Coin = {
   symbol: string;
@@ -47,8 +39,7 @@ const PortfolioTable = () => {
     loading: true,
     data: []
   });
-
-  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -93,7 +84,7 @@ const PortfolioTable = () => {
   if (loading) {
     return (
       <div className="relative flex-1 flex-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <Loader />
       </div>
     );
   }
@@ -114,15 +105,6 @@ const PortfolioTable = () => {
     );
   };
 
-  const sell = async ({ coinId, amount, currentPrice, symbol }: any) => {
-    await sellCoin({ coinId, amount, soldPrice: currentPrice });
-    router.refresh();
-    toast({
-      title: `You sold ${amount} ${symbol}${amount > 1 ? 's' : ''}`,
-      description: 'Your balance has been updated'
-    });
-  };
-
   return (
     <>
       <Table>
@@ -140,47 +122,44 @@ const PortfolioTable = () => {
 
         <TableBody>
           {data.map(
-            ({ symbol, name, amount, boughtPrice, currentPrice, value, coinId }) => (
-              <TableRow key={symbol}>
-                <TableCell className="flex items-center gap-x-2">
-                  <Image
-                    alt={symbol}
-                    height={32}
-                    src={`https://s2.coinmarketcap.com/static/img/coins/32x32/${coinId}.png`}
-                    width={32}
-                  />
-                  {name}
-                </TableCell>
-                <TableCell>{amount}</TableCell>
-                <TableCell>${boughtPrice?.toFixed(3)}</TableCell>
-                <TableCell>${currentPrice?.toFixed(3)}</TableCell>
-                <TableCell>${value?.toFixed(3)}</TableCell>
-                <TableCell>{calculateChange(currentPrice, boughtPrice)}</TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button className="h-8 w-8 p-0" variant="ghost">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
-                        <Eye className="h-4 w-4" />
-                        <span className="mx-2">Buy more</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="text-red-500"
-                        onClick={() => sell({ coinId, amount, currentPrice, symbol })}
+            ({ symbol, name, amount, boughtPrice, currentPrice, value, coinId }) => {
+              return (
+                <Fragment key={symbol}>
+                  <TableRow>
+                    <TableCell className="flex items-center gap-x-2">
+                      <Image
+                        alt={symbol}
+                        height={32}
+                        src={`https://s2.coinmarketcap.com/static/img/coins/32x32/${coinId}.png`}
+                        width={32}
+                      />
+                      {name}
+                    </TableCell>
+                    <TableCell>{amount}</TableCell>
+                    <TableCell>${boughtPrice?.toFixed(3)}</TableCell>
+                    <TableCell>${currentPrice?.toFixed(3)}</TableCell>
+                    <TableCell>${value?.toFixed(3)}</TableCell>
+                    <TableCell>{calculateChange(currentPrice, boughtPrice)}</TableCell>
+                    <TableCell>
+                      <Button
+                        className="flex cursor-pointer items-center gap-x-2 text-red-500"
+                        onClick={() => setIsOpen(true)}
+                        variant="outline"
                       >
                         <Trash className="h-4 w-4" />
-                        <span className="mx-2">Sell</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            )
+                        <span>Sell</span>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+
+                  <BuyMoreDialog
+                    coin={{ name, symbol, amount, price: currentPrice, id: coinId }}
+                    isOpen={isOpen}
+                    setIsOpen={setIsOpen}
+                  />
+                </Fragment>
+              );
+            }
           )}
         </TableBody>
       </Table>

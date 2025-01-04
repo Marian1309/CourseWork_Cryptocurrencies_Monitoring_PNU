@@ -1,27 +1,27 @@
 'use client';
 
+import type { Dispatch, SetStateAction } from 'react';
 import { useEffect, useState } from 'react';
 
+import { useRouter } from 'next/navigation';
+
 import { zodResolver } from '@hookform/resolvers/zod';
+import { DialogDescription } from '@radix-ui/react-dialog';
 import { BadgeInfo } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 import { COMMISSION_PERCENT, COMMISSION_PER_COIN } from '@/constants';
 
-import { toast } from '@/hooks/use-toast';
-
-import type { BuyCoinSchema } from '@/schemas/but-coin';
-import { buyCoinSchema } from '@/schemas/but-coin';
+import type { buyCoinSchema } from '@/schemas/but-coin';
 
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-  DialogTrigger
+  DialogTitle
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -38,117 +38,75 @@ import {
 } from '@/components/ui/hover-card';
 import { Input } from '@/components/ui/input';
 
-import buyCoin from '@/actions/buy-coin';
+import type { Coin } from '@/actions/buy-coin';
+import sellCoin from '@/actions/sell-coin';
 
-type BuyCoinDialogProperties = {
-  coinName: string;
-  coinPrice: number;
-  coinSymbol: string;
-  balance: number;
-  coinId: string;
-  isRefetching: boolean;
+type SellDialogProperties = {
+  isOpen: boolean;
+  setIsOpen: Dispatch<SetStateAction<boolean>>;
+  coin: Coin;
 };
 
-const BuyCoinDialog = ({
-  coinName,
-  coinPrice,
-  coinSymbol,
-  balance,
-  coinId,
-  isRefetching
-}: BuyCoinDialogProperties) => {
-  const [{ open, isSubmitting }, setBuyDialog] = useState({
-    open: false,
-    isSubmitting: false
-  });
-  const [totalCost, setTotalCost] = useState(0);
+const SellDialog = ({ coin, isOpen, setIsOpen }: SellDialogProperties) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [totalProfit, setTotalProfit] = useState(0);
 
-  const form = useForm<BuyCoinSchema>({
-    resolver: zodResolver(buyCoinSchema),
+  const form = useForm({
+    resolver: zodResolver(
+      z.object({
+        amount: z.string().refine((value) => Number(value) <= coin.amount, {
+          message: 'You do not have enough coins.'
+        }),
+        coinName: z.string()
+      })
+    ),
     defaultValues: {
-      coinName,
+      coinName: coin.name,
       amount: ''
     },
     mode: 'onChange'
   });
 
+  const router = useRouter();
+
   useEffect(() => {
     const subscription = form.watch((value) => {
       const amount = Number.parseFloat(value.amount as string) || 0;
-      const commission = amount * COMMISSION_PER_COIN + amount * coinPrice * 0.05;
+      const commission = amount * COMMISSION_PER_COIN + amount * coin.price * 0.05;
       const percent = amount == 0 ? 0 : COMMISSION_PERCENT;
-      setTotalCost(amount * coinPrice + commission + percent);
+      setTotalProfit(amount * coin.price + commission + percent);
     });
 
     return () => subscription.unsubscribe();
-  }, [form, coinPrice]);
+  }, [coin.price, form]);
 
-  const handleBuyCoin = async (data: BuyCoinSchema) => {
-    setBuyDialog((previous) => ({ ...previous, isSubmitting: true }));
-
-    try {
-      const result = await buyCoin({
-        name: coinName,
-        amount: +data.amount,
-        symbol: coinSymbol,
-        price: coinPrice,
-        id: coinId
-      });
-
-      if (result?.message) {
-        toast({
-          title: 'Error',
-          description: result.message,
-          variant: 'destructive'
-        });
-
-        return;
-      }
-
-      form.reset();
-      setBuyDialog((previous) => ({ ...previous, open: false }));
-
-      toast({
-        title: 'Coin purchased',
-        description: `You've bought ${data.amount} ${coinName}.`
-      });
-    } catch {
-      toast({
-        title: 'Error',
-        description: 'There was an error while purchasing the coin.',
-        variant: 'destructive'
-      });
-    } finally {
-      setBuyDialog((previous) => ({ ...previous, isSubmitting: false }));
-    }
+  const handleBuyMoreCoin = async (data: z.infer<typeof buyCoinSchema>) => {
+    setIsSubmitting(true);
+    await sellCoin({
+      coinId: +coin.id,
+      amount: +data.amount,
+      soldPrice: coin.price
+    });
+    setIsSubmitting(false);
+    setIsOpen(false);
+    router.refresh();
   };
 
   return (
-    <Dialog
-      onOpenChange={() =>
-        setBuyDialog((previous) => ({ ...previous, open: !previous.open }))
-      }
-      open={open}
-    >
-      <DialogTrigger asChild>
-        <Button disabled={isRefetching} variant="outline">
-          Buy Coin
-        </Button>
-      </DialogTrigger>
-
+    <Dialog onOpenChange={() => setIsOpen((previous) => !previous)} open={isOpen}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            Buy Cryptocurrency ( {balance.toFixed(2)} $ available )
+            You can sell {coin.amount} {coin.name} by {coin.price.toFixed(4)} $ right now.
           </DialogTitle>
 
           <DialogDescription>
-            Enter the amount of {coinName} you want to buy.
+            Enter the amount of {coin.name} you want to sell.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form className="space-y-4" onSubmit={form.handleSubmit(handleBuyCoin)}>
+          <form className="space-y-4" onSubmit={form.handleSubmit(handleBuyMoreCoin)}>
             <FormField
               control={form.control}
               name="coinName"
@@ -156,7 +114,7 @@ const BuyCoinDialog = ({
                 <FormItem>
                   <FormLabel>Coin Name</FormLabel>
                   <FormControl>
-                    <Input disabled placeholder={coinName} {...field} />
+                    <Input disabled placeholder={coin.name} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -187,7 +145,19 @@ const BuyCoinDialog = ({
             <DialogFooter className="!flex !items-center !justify-between">
               <HoverCard>
                 <div className="flex items-center gap-2">
-                  Total Cost with tax: ${totalCost.toFixed(4)}
+                  <div className="flex flex-col items-start">
+                    <span>
+                      Profit: ${(coin.price * Number(form.watch('amount'))).toFixed(4)}
+                    </span>
+                    <span>
+                      Taxes: $
+                      {(totalProfit - coin.price * Number(form.watch('amount'))).toFixed(
+                        4
+                      )}
+                    </span>
+                    <span>Total Cost: ${totalProfit.toFixed(4)}</span>
+                  </div>
+
                   {form.watch('amount') && (
                     <HoverCardTrigger className="flex items-center gap-2">
                       <BadgeInfo className="h-4 w-4" />
@@ -196,14 +166,19 @@ const BuyCoinDialog = ({
                 </div>
                 <HoverCardContent className="w-full">
                   <div className="flex flex-col gap-2 text-sm">
-                    <span>Commision, per share: 0.5% + 0.012$ = </span>
+                    <span>Commision, per share: 0.5% + 0.012$ </span>
                     <span>+ Per order: {COMMISSION_PERCENT}$</span>
                   </div>
                 </HoverCardContent>
               </HoverCard>
 
-              <Button disabled={isSubmitting || !form.watch('amount')} type="submit">
-                {isSubmitting ? 'Processing...' : 'Buy'}
+              <Button
+                disabled={
+                  isSubmitting || !form.watch('amount') || !!form.formState.errors.amount
+                }
+                type="submit"
+              >
+                {isSubmitting ? 'Processing...' : 'Sell'}
               </Button>
             </DialogFooter>
           </form>
@@ -213,4 +188,4 @@ const BuyCoinDialog = ({
   );
 };
 
-export default BuyCoinDialog;
+export default SellDialog;

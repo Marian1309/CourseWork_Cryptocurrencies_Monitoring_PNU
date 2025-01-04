@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from 'react';
 
 import { useUser } from '@clerk/nextjs';
-import type { DefaultView, DisplayMode, Settings } from '@prisma/client';
+import type { Settings } from '@prisma/client';
 
 import { toast } from '@/hooks/use-toast';
 
@@ -21,7 +21,6 @@ import { Label } from '@/components/ui/label';
 import Loader from '@/components/ui/loader';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import Saving from './_components/saving';
@@ -31,6 +30,7 @@ const SettingsPage = () => {
   const [temporarySettings, setTemporarySettings] = useState<Settings | undefined>();
 
   const [userFullName, setUserFullName] = useState<string | undefined>();
+  const [userEmail, setUserEmail] = useState<string | undefined>();
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -42,7 +42,11 @@ const SettingsPage = () => {
   const handleSave = () => {
     if (temporarySettings) {
       startTransition(async () => {
-        await updateSettings({ ...temporarySettings, fullName: userFullName });
+        await updateSettings({
+          ...temporarySettings,
+          fullName: userFullName,
+          email: userEmail
+        });
         toast({
           title: 'Settings saved',
           description: 'Your preferences have been updated.',
@@ -66,14 +70,6 @@ const SettingsPage = () => {
         <TabsList className="flex">
           <TabsTrigger className="flex-1" value="general">
             General
-          </TabsTrigger>
-
-          <TabsTrigger className="flex-1" value="notifications">
-            Notifications
-          </TabsTrigger>
-
-          <TabsTrigger className="flex-1" value="display">
-            Display
           </TabsTrigger>
 
           <TabsTrigger className="flex-1" value="account">
@@ -147,105 +143,6 @@ const SettingsPage = () => {
           )}
         </TabsContent>
 
-        <TabsContent value="notifications">
-          <Card>
-            <CardHeader>
-              <CardTitle>Notification Settings</CardTitle>
-              <CardDescription>Manage your notification preferences</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="price-alerts">Price Alerts</Label>
-                <Switch
-                  checked={temporarySettings?.priceAlerts}
-                  id="price-alerts"
-                  onCheckedChange={(checked) =>
-                    setTemporarySettings((previous) => ({
-                      ...previous!,
-                      priceAlerts: checked
-                    }))
-                  }
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Label htmlFor="portfolio-summary">Portfolio Summary</Label>
-                <Switch
-                  checked={temporarySettings?.portfolioSummary}
-                  id="portfolio-summary"
-                  onCheckedChange={(checked) =>
-                    setTemporarySettings((previous) => ({
-                      ...previous!,
-                      portfolioSummary: checked
-                    }))
-                  }
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="display">
-          <Card>
-            <CardHeader>
-              <CardTitle>Display Settings</CardTitle>
-              <CardDescription>Customize your viewing experience</CardDescription>
-            </CardHeader>
-
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="display-mode">Display Mode</Label>
-                <RadioGroup
-                  className="flex space-x-4"
-                  id="display-mode"
-                  onValueChange={(value) =>
-                    setTemporarySettings((previous) => ({
-                      ...previous!,
-                      displayMode: value as DisplayMode
-                    }))
-                  }
-                  value={temporarySettings?.displayMode}
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem id="compact" value="compact" />
-                    <Label htmlFor="compact">Compact</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem id="comfortable" value="comfortable" />
-                    <Label htmlFor="comfortable">Comfortable</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="default-view">Default View</Label>
-                <RadioGroup
-                  className="flex space-x-4"
-                  id="default-view"
-                  onValueChange={(value) =>
-                    setTemporarySettings((previous) => ({
-                      ...previous!,
-                      defaultView: value as DefaultView
-                    }))
-                  }
-                  value={temporarySettings?.defaultView}
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem id="list" value="list" />
-                    <Label htmlFor="list">List</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem id="grid" value="grid" />
-                    <Label htmlFor="grid">Grid</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         <TabsContent value="account">
           <Card>
             <CardHeader>
@@ -270,20 +167,11 @@ const SettingsPage = () => {
                 <Label htmlFor="email">Email</Label>
                 <Input
                   className="w-full rounded border p-2"
-                  disabled={
-                    user?.emailAddresses[0].emailAddress ===
-                    user?.primaryEmailAddress?.emailAddress
-                  }
                   id="email"
-                  onChange={(event) =>
-                    setTemporarySettings((previous) => ({
-                      ...previous!,
-                      email: event.target.value
-                    }))
-                  }
-                  placeholder="your@email.com"
+                  onChange={(event) => setUserEmail(event.target.value)}
+                  placeholder="Enter your email"
                   type="email"
-                  value={settings?.email ?? user?.emailAddresses[0].emailAddress ?? ''}
+                  value={userEmail ?? settings?.email ?? ''}
                 />
               </div>
             </CardContent>

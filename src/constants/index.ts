@@ -16,3 +16,6 @@ export const NAV_ITEMS = [
   { name: 'Portfolio', href: '/portfolio', icon: PieChart },
   { name: 'Settings', href: '/settings', icon: Settings }
 ];
+
+export const COMMISSION_PERCENT = 0.5;
+export const COMMISSION_PER_COIN = 0.0012;

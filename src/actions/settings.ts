@@ -62,7 +62,9 @@ export const updateUserSettings = async (
       priceAlerts: body.priceAlerts,
       portfolioSummary: body.portfolioSummary,
       displayMode: body.displayMode,
-      defaultView: body.defaultView
+      defaultView: body.defaultView,
+      fullName: body.fullName,
+      email: body.email
     },
     create: {
       id: nanoid(),
@@ -72,7 +74,9 @@ export const updateUserSettings = async (
       priceAlerts: body.priceAlerts ?? true,
       portfolioSummary: body.portfolioSummary ?? false,
       displayMode: body.displayMode ?? DisplayMode.COMFORTABLE,
-      defaultView: body.defaultView ?? DefaultView.LIST
+      defaultView: body.defaultView ?? DefaultView.LIST,
+      fullName: body.fullName,
+      email: body.email
     }
   });
 

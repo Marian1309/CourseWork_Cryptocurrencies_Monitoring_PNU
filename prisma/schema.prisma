@@ -17,12 +17,18 @@ enum DefaultView {
   GRID
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
   id       String  @id
   fullName String?
   email    String?
 
   balance Float @default(10000)
+  role    Role  @default(USER)
 
   coins      Coin[]
   settingsId String?
