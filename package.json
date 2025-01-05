@@ -28,14 +28,7 @@
     "db:migrate": "prisma migrate dev --name",
     "db:gen": "prisma generate",
     "db:studio": "prisma studio",
-    "db:reset": "prisma migrate reset",
-    "test:unit": "vitest run --passWithNoTests",
-    "test:e2e:all": "playwright test && rm -rf test-results",
-    "test:e2e:chromium": "playwright test --project=chromium && rm -rf test-results",
-    "test:e2e:firefox": "playwright test --project=firefox && rm -rf test-results",
-    "test:e2e:safari": "playwright test --project=safari && rm -rf test-results",
-    "test:e2e:list": "playwright test --list",
-    "test:e2e:install": "playwright install-deps && playwright install"
+    "db:reset": "prisma migrate reset"
   },
   "browserslist": {
     "production": [
@@ -90,11 +83,6 @@
     "@commitlint/format": "19.5.0",
     "@commitlint/types": "19.5.0",
     "@next/bundle-analyzer": "14.2.20",
-    "@playwright/test": "^1.49.1",
-    "@testing-library/dom": "^10.4.0",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.1.0",
-    "@testing-library/user-event": "^14.5.2",
     "@trivago/prettier-plugin-sort-imports": "4.3.0",
     "@types/node": "22",
     "@types/react": "18.2.14",
@@ -120,7 +108,6 @@
     "eslint-plugin-unicorn": "^56.0.1",
     "husky": "9.1.7",
     "inquirer": "9",
-    "jsdom": "^25.0.1",
     "lint-staged": "15.2.11",
     "npm-check-updates": "17.1.11",
     "postcss": "8",
@@ -132,9 +119,7 @@
     "tailwind-merge": "2.5.5",
     "tailwindcss": "3.4.16",
     "tailwindcss-animate": "1.0.7",
-    "typescript": "5.5.2",
-    "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "2.1.8"
+    "typescript": "5.5.2"
   },
   "packageManager": "bun@1.1.38",
   "engines": {

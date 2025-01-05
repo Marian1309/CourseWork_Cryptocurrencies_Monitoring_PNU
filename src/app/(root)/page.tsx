@@ -1,6 +1,8 @@
 import CryptoTable from './_components/crypto-table';
 import Trends from './_components/trends';
 
+export const runtime = 'experimental-edge';
+
 const HomePage = () => {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">

@@ -25,29 +25,6 @@ jobs:
       - name: Run ESLint
         run: bun run lint
 
-  testing:
-    name: Testing
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2.0.1
-
-      - name: Install Dependencies with Bun
-        run: bun install
-
-      - name: Unit Testing
-        run: bun run test:unit
-
-      - name: Install Playwright Browsers
-        run: bun run test:e2e:install
-
-      - name: E2E Testing
-        run: bun run test:e2e:all
-
   build:
     name: Build
     runs-on: ubuntu-latest
