@@ -19,13 +19,10 @@ type Properties = {
 const TablePagination = ({ searchPage, onPageChange, totalItems }: Properties) => {
   const router = useRouter();
 
-  // Calculate total pages based on totalItems and itemsPerPage
   const totalPages = totalItems;
 
-  // Ensure `searchPage` is always within valid range
   const currentPage = Math.min(Math.max(1, +searchPage || 1), totalPages);
 
-  // If searchPage is out of range, navigate to the last page
   if (currentPage !== +searchPage && totalPages > 0) {
     router.push(`/?search_page=${currentPage}`, { scroll: false });
     return;
@@ -36,11 +33,10 @@ const TablePagination = ({ searchPage, onPageChange, totalItems }: Properties) =
   };
 
   const renderPaginationItems = () => {
-    if (totalPages <= 1) return; // No pagination if there’s only 1 page
+    if (totalPages <= 1) return;
 
     const items = [];
 
-    // First page
     items.push(
       <PaginationItem className="dark:text-white" key={1}>
         <PaginationLink
@@ -53,7 +49,6 @@ const TablePagination = ({ searchPage, onPageChange, totalItems }: Properties) =
       </PaginationItem>
     );
 
-    // Ellipsis before middle pages
     if (currentPage > 3) {
       items.push(
         <PaginationItem className="dark:text-white" key="ellipsis1">
@@ -62,7 +57,6 @@ const TablePagination = ({ searchPage, onPageChange, totalItems }: Properties) =
       );
     }
 
-    // Middle pages
     for (
       let index = Math.max(2, currentPage - 1);
       index <= Math.min(totalPages - 1, currentPage + 1);
@@ -81,7 +75,6 @@ const TablePagination = ({ searchPage, onPageChange, totalItems }: Properties) =
       );
     }
 
-    // Ellipsis after middle pages
     if (currentPage < totalPages - 2) {
       items.push(
         <PaginationItem className="dark:text-white" key="ellipsis2">
@@ -90,7 +83,6 @@ const TablePagination = ({ searchPage, onPageChange, totalItems }: Properties) =
       );
     }
 
-    // Last page
     items.push(
       <PaginationItem className="dark:text-white" key={totalPages}>
         <PaginationLink

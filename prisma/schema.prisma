@@ -25,10 +25,9 @@ enum Role {
 model User {
   id       String  @id
   fullName String?
-  email    String?
-
-  balance Float @default(10000)
-  role    Role  @default(USER)
+  email    String? @unique
+  balance  Float   @default(10000)
+  role     Role    @default(USER)
 
   coins      Coin[]
   settingsId String?
@@ -36,16 +35,14 @@ model User {
 }
 
 model Settings {
-  id               String      @id
-  userId           String      @unique
-  theme            String      @default("system")
-  refreshInterval  Int         @default(60000)
-  priceAlerts      Boolean     @default(true)
-  portfolioSummary Boolean     @default(false)
-  displayMode      DisplayMode @default(COMFORTABLE)
-  defaultView      DefaultView @default(LIST)
-  fullName         String?
-  email            String?
+  id              String      @id
+  userId          String      @unique
+  theme           String      @default("system")
+  refreshInterval Int         @default(60000)
+  displayMode     DisplayMode @default(COMFORTABLE)
+  defaultView     DefaultView @default(LIST)
+  fullName        String?
+  email           String?     @unique
 
   user User[]
 }
@@ -55,7 +52,7 @@ model Coin {
   name        String
   symbol      String
   boughtPrice Float
-  boughtAt    DateTime
+  boughtAt    DateTime @default(now())
   amount      Float
   coinId      Int
 
