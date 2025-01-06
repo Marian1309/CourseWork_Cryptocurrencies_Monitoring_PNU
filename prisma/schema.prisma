@@ -55,7 +55,6 @@ model Coin {
   boughtAt    DateTime @default(now())
   amount      Float
   coinId      Int
-
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id])
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
 }

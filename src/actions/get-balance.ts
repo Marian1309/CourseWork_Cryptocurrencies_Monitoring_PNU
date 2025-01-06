@@ -13,7 +13,7 @@ const getUserBalance = async () => {
 
     const user = await database.user.findUnique({
       where: { id: userId },
-      select: { balance: true } // Fetch only the `balance` field for efficiency
+      select: { balance: true }
     });
 
     return user?.balance ?? undefined;

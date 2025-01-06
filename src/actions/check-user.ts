@@ -11,11 +11,9 @@ const checkUser = async () => {
     const { userId } = await auth();
     if (!userId) return false;
 
-    // Fetch user data from Clerk
     const client = await clerkClient();
     const user = await client.users.getUser(userId);
 
-    // Upsert the user in the database
     const fullName = user?.fullName ?? '';
     const email = user?.emailAddresses[0]?.emailAddress ?? '';
 

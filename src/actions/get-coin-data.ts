@@ -10,7 +10,6 @@ const getCoinData = async (coinSymbol: string) => {
     const { userId } = await auth();
     if (!userId) throw new Error('User not found');
 
-    // Fetch coin data from CoinMarketCap API
     const { data } = await coinMarketCapApi.get(
       `/v1/cryptocurrency/quotes/latest?symbol=${coinSymbol}`
     );

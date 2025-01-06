@@ -28,8 +28,6 @@ export const getUserSettings = async (): Promise<Settings | { error: string }> =
           userId,
           theme: 'system',
           refreshInterval: 60_000,
-          priceAlerts: true,
-          portfolioSummary: false,
           displayMode: DisplayMode.COMFORTABLE,
           defaultView: DefaultView.LIST
         }
@@ -59,8 +57,6 @@ export const updateUserSettings = async (
     update: {
       theme: body.theme,
       refreshInterval: body.refreshInterval,
-      priceAlerts: body.priceAlerts,
-      portfolioSummary: body.portfolioSummary,
       displayMode: body.displayMode,
       defaultView: body.defaultView,
       fullName: body.fullName,
@@ -71,8 +67,6 @@ export const updateUserSettings = async (
       userId,
       theme: body.theme ?? 'system',
       refreshInterval: body.refreshInterval ?? 60_000,
-      priceAlerts: body.priceAlerts ?? true,
-      portfolioSummary: body.portfolioSummary ?? false,
       displayMode: body.displayMode ?? DisplayMode.COMFORTABLE,
       defaultView: body.defaultView ?? DefaultView.LIST,
       fullName: body.fullName,

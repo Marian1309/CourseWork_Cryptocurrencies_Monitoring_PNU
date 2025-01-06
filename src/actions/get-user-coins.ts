@@ -11,7 +11,6 @@ const getUserCoins = async () => {
     const { userId } = await auth();
     if (!userId) throw new Error('User not found');
 
-    // Fetch user's coins from the database
     const coins = await database.coin.findMany({
       where: { userId },
       select: { coinId: true, amount: true, symbol: true, name: true, boughtPrice: true } // Select only necessary fields

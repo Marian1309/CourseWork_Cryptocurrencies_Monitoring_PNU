@@ -18,7 +18,6 @@ const searchCrypto = async ({ page, limit, searchTerm }: Parameters) => {
   };
 
   try {
-    // Fetch data from the API, only passing `searchTerm` if it's provided
     const { data } = await axios.get('https://coins-marian1309.vercel.app', {
       params: parameters
     });
